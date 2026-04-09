@@ -3,18 +3,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class UserModel {
   final String uid;
   final String email;
-  final String name;
-  final String phone;
-  final String role;
-  final DateTime createdAt;
+  final String nombre;
+  final String telefono;
+  final String rol;
+  final DateTime fechaCreacion;
 
   UserModel({
     required this.uid,
     required this.email,
-    required this.name,
-    required this.phone,
-    this.role = 'client', // Valor por defecto
-    required this.createdAt,
+    required this.nombre,
+    required this.telefono,
+    this.rol = 'cliente', // Valor por defecto al crear un nuevo usuario
+    required this.fechaCreacion,
   });
 
   // Crear un UserModel a partir de un Map<String, dynamic> obtenido de Firestore
@@ -22,10 +22,10 @@ class UserModel {
     return UserModel(
       uid: map['uid'] ?? '',
       email: map['email'] ?? '',
-      name: map['name'] ?? '',
-      phone: map['phone'] ?? '',
-      role: map['role'] ?? '',
-      createdAt: (map['createdAt'] as Timestamp).toDate(),
+      nombre: map['nombre'] ?? '',
+      telefono: map['telefono'] ?? '',
+      rol: map['rol'] ?? '',
+      fechaCreacion: (map['fechaCreacion'] as Timestamp).toDate(),
     );
   }
 
@@ -34,10 +34,10 @@ class UserModel {
     return {
       'uid': uid,
       'email': email,
-      'name': name,
-      'phone': phone,
-      'role': role,
-      'createdAt': Timestamp.fromDate(createdAt),
+      'nombre': nombre,
+      'telefono': telefono,
+      'rol': rol,
+      'fechaCreacion': Timestamp.fromDate(fechaCreacion),
     };
   }
 
@@ -45,18 +45,18 @@ class UserModel {
   UserModel copyWith({
     String? uid,
     String? email,
-    String? name,
-    String? phone,
-    String? role,
-    DateTime? createdAt,
+    String? nombre,
+    String? telefono,
+    String? rol,
+    DateTime? fechaCreacion,
   }) {
     return UserModel(
       uid: uid ?? this.uid,
       email: email ?? this.email,
-      name: name ?? this.name,
-      phone: phone ?? this.phone,
-      role: role ?? this.role,
-      createdAt: createdAt ?? this.createdAt,
+      nombre: nombre ?? this.nombre,
+      telefono: telefono ?? this.telefono,
+      rol: rol ?? this.rol,
+      fechaCreacion: fechaCreacion ?? this.fechaCreacion,
     );
   }
 }
