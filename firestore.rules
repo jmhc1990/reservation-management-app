@@ -1,7 +1,52 @@
 rules_version = '2';
+
 service cloud.firestore{
     match /databases/{database}/documents{
-        
+
+    // funciones para reutilizar codigo
+
+    function estaAutenticado() {
+      return request.auth != null;
     }
 
+    function esPropietario(uid) {
+      return request.auth.uid == uid;
+    }
+
+    function obtenerRol() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.rol;
+    }
+
+    function esAdmin() {
+      return estaAutenticado() && obtenerRol() == 'admin';
+    }
+
+    function esCliente() {
+      return estaAutenticado() && obtenerRol() == 'cliente';
+    }
+
+    // Colección: users
+
+    match /users/{uid} {
+
+      // Leer: el propio usuario o un admin
+      allow read: if esPropietario(uid) || esAdmin();
+
+      // Crear: solo el propio usuario, rol forzado a 'cliente'
+      allow create: if esPropietario(uid)
+                    && request.resource.data.rol == 'cliente'
+                    && request.resource.data.email is string
+                    && request.resource.data.email.size() > 0
+                    && request.resource.data.nombre is string
+                    && request.resource.data.nombre.size() > 0;
+
+      // Actualizar: usuario puede editar su perfil pero NO su rol solo admin puede cambiar el rol
+      allow update: if (esPropietario(uid) 
+                    && !('rol' in request.resource.data.diff(resource.data).affectedKeys()))
+                    || esAdmin();
+
+      // Eliminar: solo admin
+      allow delete: if esAdmin();
+    }
+  }
 }
