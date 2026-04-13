@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "959177740121",
+    "project_id": "stylesync-4b86c",
+    "storage_bucket": "stylesync-4b86c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:959177740121:android:40d6d3570c71d6e2fe4648",
+        "android_client_info": {
+          "package_name": "es.zaitec.style_sync"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "959177740121-lqbekeugvok3s35qc70643q0k9q9kqu3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeoGVpBDtnFKFd9LctgGG2Z0xxuzDoknQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "959177740121-lqbekeugvok3s35qc70643q0k9q9kqu3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "959177740121-c5m4ajt908ub9f7onaq05i9ut6p8tfdd.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "es.zaitec.styleSync"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
