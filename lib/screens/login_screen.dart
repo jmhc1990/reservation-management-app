@@ -59,7 +59,7 @@ class LoginScreen extends StatelessWidget {
                 );
               },
               child: const Text(
-                'Regístrate aquí',
+                '¿No tienes cuenta? Regístrate aquí',
                 style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
               ),
             ),
