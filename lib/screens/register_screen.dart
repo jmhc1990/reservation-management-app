@@ -6,10 +6,10 @@ class RegisterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFFDFBF7),
       appBar: AppBar(
         title: const Text('Crear Cuenta'),
-        backgroundColor: Colors.black,
+        backgroundColor:Color(0xFF1A1A1A),
         foregroundColor: Colors.white,
       ),
       body: Padding(
@@ -19,7 +19,7 @@ class RegisterScreen extends StatelessWidget {
           children: [
             const Text(
               'Únete a la Barbería',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
             ),
             const SizedBox(height: 40),
             
@@ -55,7 +55,7 @@ class RegisterScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () {},
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
+                backgroundColor: Color(0xFFD4AF37),
                 minimumSize: const Size(double.infinity, 50),
               ),
               child: const Text('REGISTRARSE', style: TextStyle(color: Colors.white)),

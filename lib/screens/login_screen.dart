@@ -6,10 +6,10 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFFDFBF7),
       appBar: AppBar(
         title: const Text('Barbería Zaitec'),
-        backgroundColor: Colors.black,
+        backgroundColor: Color(0xFF1A1A1A),
         foregroundColor: Colors.white,
       ),
       body: Padding(
@@ -42,7 +42,8 @@ class LoginScreen extends StatelessWidget {
            ElevatedButton(
               onPressed: () {},
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
+                backgroundColor: Color(0xFFD4AF37),
+                foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -60,7 +61,7 @@ class LoginScreen extends StatelessWidget {
               },
               child: const Text(
                 '¿No tienes cuenta? Regístrate aquí',
-                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                style: TextStyle(color:Color(0xFF1A1A1A), fontWeight: FontWeight.bold),
               ),
             ),
           ],
