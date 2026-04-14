@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:provider/provider.dart';
 import 'controllers/auth_controller.dart';
 import 'firebase_options.dart'; // Generado por flutterfire configure
@@ -14,6 +15,16 @@ Future<void> main() async {
   );
  
   runApp(const BarberApp());
+=======
+import 'firebase_options.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(MyApp());
+>>>>>>> 2d9429bfe3179916bfa0c42578212622d69f5a51
 }
  
 class BarberApp extends StatelessWidget {
