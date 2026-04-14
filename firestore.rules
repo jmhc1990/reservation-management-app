@@ -1,9 +1,9 @@
 rules_version = '2';
 
-service cloud.firestore{
-    match /databases/{database}/documents{
+service cloud.firestore {
+  match /databases/{database}/documents {
 
-    // funciones para reutilizar codigo
+    // Funciones para simplificar
 
     function estaAutenticado() {
       return request.auth != null;
@@ -21,32 +21,82 @@ service cloud.firestore{
       return estaAutenticado() && obtenerRol() == 'admin';
     }
 
+    function esStaff() {
+      return estaAutenticado() && obtenerRol() == 'staff';
+    }
+
     function esCliente() {
       return estaAutenticado() && obtenerRol() == 'cliente';
     }
 
-    // Colección: users
+    // Colección users
 
     match /users/{uid} {
 
-      // Leer: el propio usuario o un admin
+      // Leer: el usuario y staff pueden ver su perfil y admin puede verlos todos
       allow read: if esPropietario(uid) || esAdmin();
 
       // Crear: solo el propio usuario, rol forzado a 'cliente'
+      // staff los asigna el admin manualmente
       allow create: if esPropietario(uid)
-                    && request.resource.data.rol == 'cliente'
-                    && request.resource.data.email is string
-                    && request.resource.data.email.size() > 0
-                    && request.resource.data.nombre is string
-                    && request.resource.data.nombre.size() > 0;
+                      && request.resource.data.rol == 'cliente'
+                      && request.resource.data.email is string
+                      && request.resource.data.email.size() > 0
+                      && request.resource.data.nombre is string
+                      && request.resource.data.nombre.size() > 0;
 
-      // Actualizar: usuario puede editar su perfil pero NO su rol solo admin puede cambiar el rol
-      allow update: if (esPropietario(uid) 
-                    && !('rol' in request.resource.data.diff(resource.data).affectedKeys()))
-                    || esAdmin();
+      // Actualizar: El usuario y staff pueden editar su perfil pero NO su rol, solo admin puede cambiar el rol
+      allow update: if (esPropietario(uid)
+                      && !('rol' in request.resource.data.diff(resource.data).affectedKeys()))
+                      || esAdmin();
+
+      // Eliminar: solo el admin
+      allow delete: if esAdmin();
+    }
+
+    // Colección citas
+
+    match /citas/{citaId} {
+
+      // Leer: Cliente ve sus citas, staff ve solo las suyas, admin ve todas
+      allow read: if esAdmin()
+                    || resource.data.idCliente == request.auth.uid
+                    || resource.data.idStaff == request.auth.uid;
+
+      // Crear: cliente o admin pueden crear citas
+      allow create: if estaAutenticado()
+                      && (esCliente() || esAdmin())
+                      && request.resource.data.estado == 'pendiente'
+                      && request.resource.data.idCliente is string
+                      && request.resource.data.idStaff is string
+                      && request.resource.data.idServicio is string;
+
+      // Actualizar:
+      // - staff solo puede cambiar el campo 'estado'
+      // - cliente no puede modificar nada
+      // - admin puede modificar todo
+      allow update: if esAdmin()
+                      || (esStaff()
+                      && resource.data.idStaff == request.auth.uid
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['estado']));
 
       // Eliminar: solo admin
       allow delete: if esAdmin();
+    }
+
+    // Colección: servicios (el catálogo)
+    match /servicios/{servicioId} {
+
+      // Leer: cualquier usuario autenticado puede ver
+      allow read: if estaAutenticado();
+
+      // Crear, actualizar, eliminar: solo admin
+      allow write: if esAdmin();
+    }
+
+    // Deniega todo lo demás
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
