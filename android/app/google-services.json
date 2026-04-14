@@ -29,16 +29,6 @@
             {
               "client_id": "959177740121-lqbekeugvok3s35qc70643q0k9q9kqu3.apps.googleusercontent.com",
               "client_type": 3
-<<<<<<< HEAD
-            },
-            {
-              "client_id": "959177740121-c5m4ajt908ub9f7onaq05i9ut6p8tfdd.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "es.zaitec.styleSync"
-              }
-=======
->>>>>>> 2d9429bfe3179916bfa0c42578212622d69f5a51
             }
           ]
         }
