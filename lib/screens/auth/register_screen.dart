@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
@@ -8,8 +9,14 @@ class RegisterScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Color(0xFFFDFBF7),
       appBar: AppBar(
-        title: const Text('Crear Cuenta'),
-        backgroundColor:Color(0xFF1A1A1A),
+        title: Text(
+          'Crear cuenta',
+          style: GoogleFonts.oswald(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        backgroundColor: const Color(0xFF1A1A1A),
         foregroundColor: Colors.white,
       ),
       body: Padding(
@@ -17,43 +24,84 @@ class RegisterScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
+            Text(
               'Únete a la Barbería',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
-            ),
-            const SizedBox(height: 40),
-            
-            // Nuevo campo: Nombre
-            TextField(
-              style: TextStyle(color: Color(0xFF1A1A1A)),
-              decoration: InputDecoration(
-                labelText: 'Nombre completo',
-                labelStyle: TextStyle(color: Color(0xFF1A1A1A)),
-                border: OutlineInputBorder(),
-               prefixIcon: Icon(Icons.person, color: Color(0xFF1A1A1A)),
+              style: GoogleFonts.oswald(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF1A1A1A),
               ),
             ),
+            const SizedBox(height: 40),
+
+            // Nuevo campo: Nombre
+            TextField(
+              style: GoogleFonts.lato(color: const Color(0xFF1A1A1A)),
+              decoration: InputDecoration(
+                labelText: 'Nombre completo',
+                labelStyle: GoogleFonts.lato(color: const Color(0xFF1A1A1A)),
+                prefixIcon: Icon(Icons.person, color: Color(0xFF1A1A1A)),
+                filled: true,
+                fillColor: Colors.grey.withOpacity(0.1),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.transparent),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFD4AF37),
+                    width: 2,
+                  ),
+                ),
+              ),
+            ),
+
             const SizedBox(height: 20),
 
             TextField(
-              style: TextStyle(color: Color(0xFF1A1A1A)),
+              style: GoogleFonts.lato(color: const Color(0xFF1A1A1A)),
               decoration: InputDecoration(
                 labelText: 'Correo electrónico',
-                labelStyle: TextStyle(color: Color(0xFF1A1A1A)),
-                border: OutlineInputBorder(),
+                labelStyle: GoogleFonts.lato(color: const Color(0xFF1A1A1A)),
                 prefixIcon: Icon(Icons.email, color: Color(0xFF1A1A1A)),
+                filled: true,
+                fillColor: Colors.grey.withOpacity(0.1), // Aquí está el gris
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.transparent),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFD4AF37),
+                    width: 2,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 20),
 
             TextField(
               obscureText: true,
-              style: TextStyle(color: Color(0xFF1A1A1A)),
+              style: GoogleFonts.lato(color: const Color(0xFF1A1A1A)),
               decoration: InputDecoration(
                 labelText: 'Contraseña',
-                labelStyle: TextStyle(color: Color(0xFF1A1A1A)),
-                border: OutlineInputBorder(),
+                labelStyle: GoogleFonts.lato(color: const Color(0xFF1A1A1A)),
                 prefixIcon: Icon(Icons.lock, color: Color(0xFF1A1A1A)),
+                filled: true,
+                fillColor: Colors.grey.withOpacity(0.1), // Aquí está el gris
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.transparent),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFD4AF37),
+                    width: 2,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 30),
@@ -64,7 +112,14 @@ class RegisterScreen extends StatelessWidget {
                 backgroundColor: Color(0xFFD4AF37),
                 minimumSize: const Size(double.infinity, 50),
               ),
-              child: const Text('REGISTRARSE', style: TextStyle(color: Colors.white)),
+              child: Text(
+                'REGISTRARSE',
+                style: GoogleFonts.oswald(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
             ),
           ],
         ),
