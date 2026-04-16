@@ -40,7 +40,6 @@ class ModeloCita {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
       'client_id': clientId,
       'staff_id': staffId,
       'service_id': serviceId,
