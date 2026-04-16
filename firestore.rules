@@ -59,9 +59,10 @@ service cloud.firestore {
     match /citas/{citaId} {
 
       // Leer: Cliente ve sus citas, staff ve solo las suyas, admin ve todas
-      allow read: if esAdmin()
+      allow read: if estaAutenticado() 
+                    && (esAdmin()
                     || resource.data.idCliente == request.auth.uid
-                    || resource.data.idStaff == request.auth.uid;
+                    || resource.data.idStaff == request.auth.uid);
 
       // Crear: cliente o admin pueden crear citas
       allow create: if estaAutenticado()
@@ -91,7 +92,7 @@ service cloud.firestore {
       allow read: if estaAutenticado();
 
       // Crear, actualizar, eliminar: solo admin
-      allow write: if esAdmin();
+      allow create, update, delete: if esAdmin();
     }
 
     // Deniega todo lo demás
