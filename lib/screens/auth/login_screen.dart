@@ -1,17 +1,45 @@
 import 'package:flutter/material.dart';
 import 'register_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:style_sync/controllers/auth_controller.dart';
+import 'package:provider/provider.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+    Future<void> _handleLogin(BuildContext context) async {
+       await context.read<AuthController>().login(
+            email: _emailController.text,
+            password: _passwordController.text,
+          );
+    }
+
+  @override
   Widget build(BuildContext context) {
+    final isLoading = context.watch<AuthController>().isLoading;
+    final errorMessage = context.watch<AuthController>().errorMessage;
+
     return Scaffold(
       backgroundColor: Color(0xFFFDFBF7),
       appBar: AppBar(
         title: Text(
-          'Barbería Zaitec',
+          'StyleSync',
           style: GoogleFonts.oswald(
             fontWeight: FontWeight.bold,
             letterSpacing: 1.2,
@@ -35,6 +63,7 @@ class LoginScreen extends StatelessWidget {
             ),
             const SizedBox(height: 40),
             TextField(
+              controller: _emailController,
               style: GoogleFonts.lato(color: const Color(0xFF1A1A1A)),
               decoration: InputDecoration(
                 labelText: 'Correo electrónico',
@@ -57,6 +86,7 @@ class LoginScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             TextField(
+              controller: _passwordController,
               obscureText: true,
               style: GoogleFonts.lato(color: const Color(0xFF1A1A1A)),
               decoration: InputDecoration(
@@ -79,8 +109,20 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 30),
+
+            if (errorMessage != null) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  errorMessage,
+                  style: GoogleFonts.lato(color: Colors.red),
+                ),
+              ),
+            ],
+            const SizedBox(height: 30),
+            // Botón de inicio de sesión
             ElevatedButton(
-              onPressed: () {},
+              onPressed: isLoading ? null : () => _handleLogin(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFD4AF37),
                 foregroundColor: Colors.white,
@@ -99,6 +141,8 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
+
+            // Botón para ir a la pantalla de registro
             TextButton(
               onPressed: () {
                 Navigator.push(

@@ -55,7 +55,7 @@ class ModeloUsuario {
     String? name,
     String? phone,
     RolUsuario? role,
-    DateTime? creationDate,
+    DateTime? createdAt,
   }) {
     return ModeloUsuario(
       uid: uid ?? this.uid,
@@ -63,7 +63,7 @@ class ModeloUsuario {
       name: name ?? this.name,
       phone: phone ?? this.phone,
       role: role ?? this.role,
-      createdAt: createdAt,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }
