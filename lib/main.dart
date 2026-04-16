@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'controllers/auth_controller.dart';
 import 'firebase_options.dart'; // Generado por flutterfire configure
 import 'navigation/auth_wrapper.dart';
-import 'screens/auth/login_screen.dart';
  
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,7 +36,7 @@ class BarberApp extends StatelessWidget {
           scaffoldBackgroundColor: const Color(0xFF0F0F1A),
         ),
         // AuthWrapper decide automáticamente si mostrar Login o Home.
-        home: const LoginScreen(),
+        home: const AuthWrapper(),
       ),
     );
   }

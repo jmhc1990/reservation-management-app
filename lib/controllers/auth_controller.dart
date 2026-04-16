@@ -48,7 +48,8 @@ class AuthController extends ChangeNotifier {
     required String email,
     required String password,
     required String confirmPassword,
-    String? displayName,
+    required String name,
+    required String phone,
   }) async {
     // validación local antes de llamar a Firebase
     if (password != confirmPassword) {
@@ -65,7 +66,8 @@ class AuthController extends ChangeNotifier {
     final result = await _authService.register(
       email: email,
       password: password,
-      displayName: displayName,
+      name: name,
+      phone: phone,
     );
  
     if (result.success) {
