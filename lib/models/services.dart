@@ -25,7 +25,6 @@ class ModeloServicio {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
       'name': name,
       'price': price,
       'duration': duration,

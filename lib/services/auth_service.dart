@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
  
 // resultado de una operación de autenticación.
 class AuthResult {
@@ -27,21 +28,28 @@ class AuthService {
   Future<AuthResult> register({
     required String email,
     required String password,
-    String? displayName,
+    required String name,
+    required String phone,
   }) async {
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
- 
-      // actualiza el nombre de usuario si se proporcionó
-      if (displayName != null && displayName.isNotEmpty) {
-        await credential.user?.updateDisplayName(displayName.trim());
-        await credential.user?.reload();
+
+      final uid = credential.user?.uid;
+      if (uid == null) {
+        return AuthResult(success: false, errorMessage: 'Error al crear la cuenta. Inténtalo de nuevo.');
       }
- 
-      return AuthResult(success: true, user: _auth.currentUser);
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'email': email.trim(),
+        'name': name.trim(),
+        'phone': phone.trim(),
+        'role': 'client', // Asignamos el rol de cliente por defecto
+        'createdAt': Timestamp.now(),
+      });
+
+      return AuthResult(success: true, user: credential.user);
     } on FirebaseAuthException catch (e) {
       return AuthResult(success: false, errorMessage: _parseFirebaseError(e));
     } catch (e) {

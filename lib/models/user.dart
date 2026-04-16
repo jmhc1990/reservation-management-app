@@ -1,23 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum RolUsuario { cliente, admin }
+enum RolUsuario { client, staff, admin }
 
 // Modelo de usuario
 class ModeloUsuario {
   final String uid;
   final String email;
-  final String nombre;
-  final String telefono;
-  final RolUsuario rol;
-  final DateTime fechaCreacion;
+  final String name;
+  final String phone;
+  final RolUsuario role;
+  final DateTime createdAt;
 
   ModeloUsuario({
     required this.uid,
     required this.email,
-    required this.nombre,
-    required this.telefono,
-    this.rol = RolUsuario.cliente, // Valor por defecto al crear un nuevo usuario
-    required this.fechaCreacion,
+    required this.name,
+    required this.phone,
+    this.role = RolUsuario.client, // Valor por defecto al crear un nuevo usuario
+    required this.createdAt,
   });
 
   // Crear un ModeloUsuario a partir de un Map<String, dynamic> obtenido de Firestore
@@ -25,14 +25,14 @@ class ModeloUsuario {
     return ModeloUsuario(
       uid: map['uid'] ?? '',
       email: map['email'] ?? '',
-      nombre: map['nombre'] ?? '',
-      telefono: map['telefono'] ?? '',
-      rol: RolUsuario.values.firstWhere(
-        (e) => e.name == map['rol'],
-        orElse: () => RolUsuario.cliente, // Si no se encuentra el rol, asignamos cliente por defecto
+      name: map['name'] ?? '',
+      phone: map['phone'] ?? '',
+      role: RolUsuario.values.firstWhere(
+        (e) => e.name == map['role'],
+        orElse: () => RolUsuario.client, // Si no se encuentra el rol, asignamos cliente por defecto
       ),
-      fechaCreacion: map['fechaCreacion'] != null
-          ? (map['fechaCreacion'] as Timestamp).toDate()
+      createdAt: map['createdAt'] != null
+          ? (map['createdAt'] as Timestamp).toDate()
           : DateTime.now(), // Si no se encuentra la fecha, asignamos la fecha actual por defecto
     );
   }
@@ -40,12 +40,11 @@ class ModeloUsuario {
   // Convertir un ModeloUsuario en un Map<String, dynamic> para guardarlo en Firestore
   Map<String, dynamic> toMap() {
     return {
-      'uid': uid,
       'email': email,
-      'nombre': nombre,
-      'telefono': telefono,
-      'rol': rol.name, // Guardamos el nombre del enum para facilitar la lectura en Firestore
-      'fechaCreacion': Timestamp.fromDate(fechaCreacion),
+      'name': name,
+      'phone': phone,
+      'role': role.name, // Guardamos el nombre del enum para facilitar la lectura en Firestore
+      'createdAt': Timestamp.fromDate(createdAt),
     };
   }
 
@@ -53,18 +52,18 @@ class ModeloUsuario {
   ModeloUsuario copyWith({
     String? uid,
     String? email,
-    String? nombre,
-    String? telefono,
-    RolUsuario? rol,
-    DateTime? fechaCreacion,
+    String? name,
+    String? phone,
+    RolUsuario? role,
+    DateTime? creationDate,
   }) {
     return ModeloUsuario(
       uid: uid ?? this.uid,
       email: email ?? this.email,
-      nombre: nombre ?? this.nombre,
-      telefono: telefono ?? this.telefono,
-      rol: rol ?? this.rol,
-      fechaCreacion: fechaCreacion ?? this.fechaCreacion,
+      name: name ?? this.name,
+      phone: phone ?? this.phone,
+      role: role ?? this.role,
+      createdAt: createdAt,
     );
   }
 }
