@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../models/services.dart';
+import '../../../services/catalog_service.dart';
 
 class ServiceFormScreen extends StatefulWidget {
   const ServiceFormScreen({super.key});
@@ -11,10 +13,27 @@ class ServiceFormScreen extends StatefulWidget {
 }
 
 class _ServiceFormScreenState extends State<ServiceFormScreen> {
-  File? _image;
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _priceController = TextEditingController();
+  final _durationController = TextEditingController();
 
-  // 📷 Seleccionar imagen con validación de tamaño
-  Future<void> pickImage() async {
+  final _catalogService = CatalogService();
+  File? _image;
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    _priceController.dispose();
+    _durationController.dispose();
+    super.dispose();
+  }
+
+  // Seleccionar imagen con validación de tamaño
+  Future<void> _pickImage() async {
     final picker = ImagePicker();
 
     final pickedFile = await picker.pickImage(
@@ -44,19 +63,37 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
     }
   }
 
-  // 💾 Guardar servicio en Firestore (modo local)
-  Future<void> saveService(String imagePath) async {
-    try {
-      await FirebaseFirestore.instance.collection('services').add({
-        'name': 'Servicio prueba',
-        'price': 10,
-        'duration': 30,
-        'image_url': imagePath,
-      });
+  // Guardar servicio en Firestore
+  Future<void> _handleSave() async {
+    if (!_formKey.currentState!.validate()) return;
 
-      debugPrint("Servicio guardado en Firestore");
+    FocusScope.of(context).unfocus();
+    setState(() => _isLoading = true);
+
+    try {
+      final servicio = ModeloServicio(
+        id: '', // Firestore asignará el ID automáticamente
+        name: _nameController.text.trim(),
+        description: _descriptionController.text.trim(),
+        price: double.parse(_priceController.text.trim()),
+        duration: int.parse(_durationController.text.trim()),
+      );
+
+      await _catalogService.createService(servicio);
+
+      if(!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Servicio creado correctamente')),
+      );
+      Navigator.pop(context);
+
     } catch (e) {
-      debugPrint("Error guardando servicio: $e");
+        if(!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al guardar el servicio: $e')),
+        );
+    } finally {
+        if(mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -64,54 +101,128 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Crear servicio')),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ElevatedButton(
-              onPressed: pickImage,
-              child: const Text('Seleccionar imagen'),
-            ),
-
-            const SizedBox(height: 20),
-
-            if (_image != null)
-              Image.file(
-                _image!,
-                height: 200,
-                fit: BoxFit.cover,
-              ),
-
-            const SizedBox(height: 20),
-
-            ElevatedButton(
-              onPressed: () async {
-                if (_image == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Selecciona una imagen primero'),
-                    ),
-                  );
-                  return;
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              
+              // Nombre
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre del servicio',
+                  prefixIcon: Icon(Icons.cut),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'El nombre es obligatorio';
+                  }
+                  return null;
                 }
+              ),
+              const SizedBox(height: 20),
 
-                final url = _image!.path;
+              // Descripción
+              TextFormField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Descripción',
+                  prefixIcon: Icon(Icons.description),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'La descripción es obligatoria';
+                  }
+                  return null;
+                }
+              ),
+              const SizedBox(height: 20),
 
-                await saveService(url);
+              // Precio
+              TextFormField(
+                controller: _priceController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                ],
+                decoration: const InputDecoration(
+                  labelText: 'Precio (€)',
+                  prefixIcon: Icon(Icons.euro),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'El precio es obligatorio';
+                  }
+                  final price = double.tryParse(value.trim());
+                  if (price == null || price <= 0) {
+                    return 'El precio debe ser mayor que 0';
+                  }
+                  return null;
+                }
+              ),
+              const SizedBox(height: 20),
 
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Servicio guardado (modo local)'),
+              // Duración
+              TextFormField(
+                controller: _durationController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                decoration: const InputDecoration(
+                  labelText: 'Duración (minutos)',
+                  prefixIcon: Icon(Icons.timer),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'La duración es obligatoria';
+                  }
+                  final duration = int.tryParse(value.trim());
+                  if (duration == null || duration <= 0) {
+                    return 'La duración debe ser mayor que 0';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+
+              // Imagen (temporal)
+              OutlinedButton.icon(
+                onPressed: _pickImage,
+                icon: const Icon(Icons.image),
+                label: const Text('Seleccionar imagen'),
+              ),
+              if (_image != null) ...[
+                const SizedBox(height: 25),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(
+                    _image!,
+                    height: 200,
+                    fit: BoxFit.cover,
                   ),
-                );
-              },
-              child: const Text('Guardar servicio'),
-            ),
-          ],
+                ),
+              ],
+              const SizedBox(height: 20),
+
+              // Boton de guardar
+              ElevatedButton(
+                onPressed: _isLoading ? null : _handleSave,
+                child: _isLoading
+                  ? const SizedBox(
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(strokeWidth: 2.5),
+                  )
+                  : const Text('Guardar servicio'),
+                  ),
+            ],
+          ),
         ),
-      ),
+      )
     );
   }
 }
