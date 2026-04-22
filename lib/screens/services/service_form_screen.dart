@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ServiceFormScreen extends StatefulWidget {
   const ServiceFormScreen({super.key});
@@ -28,23 +28,19 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
     }
   }
 
-  // ☁️ Subir imagen a Firebase
-  Future<String?> uploadImage(String serviceId) async {
-    if (_image == null) return null;
-
+  // 💾 Guardar servicio en Firestore (modo local)
+  Future<void> saveService(String imagePath) async {
     try {
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('services/$serviceId/cover.jpg');
+      await FirebaseFirestore.instance.collection('services').add({
+        'name': 'Servicio prueba',
+        'price': 10,
+        'duration': 30,
+        'image_url': imagePath, // 👈 ruta local
+      });
 
-      await ref.putFile(_image!);
-
-      final url = await ref.getDownloadURL();
-
-      return url;
+      debugPrint("Servicio guardado en Firestore");
     } catch (e) {
-      debugPrint("Error subiendo imagen: $e");
-      return null;
+      debugPrint("Error guardando servicio: $e");
     }
   }
 
@@ -75,21 +71,26 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
 
             ElevatedButton(
               onPressed: () async {
-                final url = await uploadImage("test123");
-
-                if (url != null) {
-                  debugPrint("URL: $url");
-
+                if (_image == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Imagen subida correctamente')),
+                    const SnackBar(
+                      content: Text('Selecciona una imagen primero'),
+                    ),
                   );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Error al subir imagen')),
-                  );
+                  return;
                 }
+
+                final url = _image!.path;
+
+                await saveService(url);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Servicio guardado (modo local)'),
+                  ),
+                );
               },
-              child: const Text('Subir imagen'),
+              child: const Text('Guardar servicio'),
             ),
           ],
         ),
