@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'controllers/auth_controller.dart';
+import 'controllers/theme_controller.dart';
 import 'firebase_options.dart'; // Generado por flutterfire configure
 import 'navigation/auth_wrapper.dart';
  
@@ -21,9 +22,12 @@ class BarberApp extends StatelessWidget {
  
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      // AuthController se crea una sola vez y vive toda la app.
-      create: (_) => AuthController(),
+    return MultiProvider(
+      providers: [
+        // AuthController se crea una sola vez y vive toda la app.
+        ChangeNotifierProvider(create: (_) => AuthController()),
+        ChangeNotifierProvider(create: (_) => ThemeController()),
+      ],
       child: MaterialApp(
         title: 'Barber App',
         debugShowCheckedModeBanner: false,
