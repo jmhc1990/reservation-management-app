@@ -35,9 +35,9 @@ class ModeloUsuario {
         orElse: () => RolUsuario.client, // Si no se encuentra el rol, asignamos cliente por defecto
       ),
       specialization: map['specialization'] != null
-          ? Specialization.values.firstWhere(
-              (e) => e.name == map['specialization'],
-              orElse: () => Specialization.barber, // Si no se encuentra la especialización, asignamos barber por defecto
+          ? Specialization.values.cast<Specialization?>().firstWhere(
+              (e) => e?.name == map['specialization'],
+              orElse: () => null, // Si no se encuentra la especialización, asignamos null
             )
           : null, // Solo para staff
       createdAt: map['createdAt'] != null
