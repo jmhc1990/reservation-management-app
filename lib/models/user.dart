@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum RolUsuario { client, staff, admin }
+enum Specialization { barber, stylist }
 
 // Modelo de usuario
 class ModeloUsuario {
@@ -9,6 +10,7 @@ class ModeloUsuario {
   final String name;
   final String phone;
   final RolUsuario role;
+  final Specialization? specialization; // Solo para staff
   final DateTime createdAt;
 
   ModeloUsuario({
@@ -17,6 +19,7 @@ class ModeloUsuario {
     required this.name,
     required this.phone,
     this.role = RolUsuario.client, // Valor por defecto al crear un nuevo usuario
+    this.specialization, // Solo para staff
     required this.createdAt,
   });
 
@@ -31,6 +34,12 @@ class ModeloUsuario {
         (e) => e.name == map['role'],
         orElse: () => RolUsuario.client, // Si no se encuentra el rol, asignamos cliente por defecto
       ),
+      specialization: map['specialization'] != null
+          ? Specialization.values.cast<Specialization?>().firstWhere(
+              (e) => e?.name == map['specialization'],
+              orElse: () => null, // Si no se encuentra la especialización, asignamos null
+            )
+          : null, // Solo para staff
       createdAt: map['createdAt'] != null
           ? (map['createdAt'] as Timestamp).toDate()
           : DateTime.now(), // Si no se encuentra la fecha, asignamos la fecha actual por defecto
@@ -44,6 +53,7 @@ class ModeloUsuario {
       'name': name,
       'phone': phone,
       'role': role.name, // Guardamos el nombre del enum para facilitar la lectura en Firestore
+      'specialization': specialization?.name, // Solo para staff
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -55,6 +65,7 @@ class ModeloUsuario {
     String? name,
     String? phone,
     RolUsuario? role,
+    Specialization? specialization, // Solo para staff
     DateTime? createdAt,
   }) {
     return ModeloUsuario(
@@ -63,6 +74,7 @@ class ModeloUsuario {
       name: name ?? this.name,
       phone: phone ?? this.phone,
       role: role ?? this.role,
+      specialization: specialization ?? this.specialization, // Solo para staff
       createdAt: createdAt ?? this.createdAt,
     );
   }
