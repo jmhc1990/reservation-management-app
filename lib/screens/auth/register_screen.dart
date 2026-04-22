@@ -146,7 +146,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   children: [
                     const SizedBox(height: 38),
                     Text(
-                      'Únete a la Barbería',
+                      'Únete a la barbería',
                       style: GoogleFonts.oswald(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
