@@ -2,20 +2,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../controllers/auth_controller.dart';
- 
+import '../services/service_form_screen.dart';
+import '../services/services_list_screen.dart';
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
- 
-  //  cerrar sesión 
- 
+
   Future<void> _handleLogout(BuildContext context) async {
     final confirmed = await _showLogoutDialog(context);
     if (confirmed == true && context.mounted) {
       await context.read<AuthController>().logout();
-      // el AuthWrapper detecta el cambio en el stream y redirige al Login.
     }
   }
- 
+
   Future<bool?> _showLogoutDialog(BuildContext context) {
     return showDialog<bool>(
       context: context,
@@ -35,18 +34,15 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
- 
-  //  UI pendiente de la persona de diseño
- 
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
- 
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Inicio'),
         actions: [
-          // botón de cerrar sesión
           IconButton(
             onPressed: () => _handleLogout(context),
             icon: const Icon(Icons.logout),
@@ -58,8 +54,37 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // datos del usuario autenticado disponibles para diseño
-            Text('Bienvenido, ${user?.displayName ?? user?.email ?? 'Usuario'}'),
+            Text(
+              'Bienvenido, ${user?.displayName ?? user?.email ?? 'Usuario'}',
+            ),
+
+            const SizedBox(height: 20),
+
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ServiceFormScreen(),
+                  ),
+                );
+              },
+              child: const Text('Crear servicio'),
+            ),
+
+            const SizedBox(height: 10),
+
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ServicesListScreen(),
+                  ),
+                );
+              },
+              child: const Text('Ver servicios'),
+            ),
           ],
         ),
       ),
