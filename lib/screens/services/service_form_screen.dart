@@ -13,7 +13,7 @@ class ServiceFormScreen extends StatefulWidget {
 class _ServiceFormScreenState extends State<ServiceFormScreen> {
   File? _image;
 
-  // 📷 Seleccionar imagen
+  // 📷 Seleccionar imagen con validación de tamaño
   Future<void> pickImage() async {
     final picker = ImagePicker();
 
@@ -22,8 +22,24 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
     );
 
     if (pickedFile != null) {
+      final file = File(pickedFile.path);
+
+      final sizeInBytes = await file.length();
+      final sizeInMB = sizeInBytes / (1024 * 1024);
+
+      // 🔥 Validación < 5MB
+      if (sizeInMB > 5) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('La imagen supera los 5MB'),
+          ),
+        );
+        return;
+      }
+
       setState(() {
-        _image = File(pickedFile.path);
+        _image = file;
       });
     }
   }
@@ -35,7 +51,7 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
         'name': 'Servicio prueba',
         'price': 10,
         'duration': 30,
-        'image_url': imagePath, // 👈 ruta local
+        'image_url': imagePath,
       });
 
       debugPrint("Servicio guardado en Firestore");
@@ -84,6 +100,7 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
 
                 await saveService(url);
 
+                if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Servicio guardado (modo local)'),
