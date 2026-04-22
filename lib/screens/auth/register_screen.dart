@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../controllers/auth_controller.dart';
+import '../../controllers/theme_controller.dart';
  
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -18,9 +19,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _phoneController = TextEditingController();
- 
-  // Tema local
-  bool _isDark = true;
  
   @override
   void dispose() {
@@ -95,15 +93,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
  
   @override
   Widget build(BuildContext context) {
+    final themeCtrl = context.watch<ThemeController>();
+    final isDark = themeCtrl.isDark;
+
     // Colores según tema
-    final bg        = _isDark ? const Color(0xFF0F0F1A) : const Color(0xFFFDFBF7);
-    final cardBg    = _isDark ? Colors.white.withValues(alpha: 0.06) : Colors.grey.withValues(alpha: 0.1);
-    final textColor = _isDark ? Colors.white : const Color(0xFF1A1A1A);
-    final subColor  = _isDark ? Colors.white60 : Colors.black54;
-    final iconColor = _isDark ? Colors.white54 : const Color(0xFF1A1A1A);
+    final bg        = isDark ? const Color(0xFF0F0F1A) : const Color(0xFFFDFBF7);
+    final cardBg    = isDark ? Colors.white.withValues(alpha: 0.06) : Colors.grey.withValues(alpha: 0.1);
+    final textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
+    final subColor  = isDark ? Colors.white60 : Colors.black54;
+    final iconColor = isDark ? Colors.white54 : const Color(0xFF1A1A1A);
  
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarBrightness: _isDark ? Brightness.dark : Brightness.light,
+      statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
     ));
  
     return Consumer<AuthController>(
@@ -125,10 +126,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             iconTheme: IconThemeData(color: textColor),
             actions: [
               IconButton(
-                onPressed: () => setState(() => _isDark = !_isDark),
-                tooltip: _isDark ? 'Modo claro' : 'Modo oscuro',
+                onPressed: themeCtrl.toggle,
+                tooltip: isDark ? 'Modo claro' : 'Modo oscuro',
                 icon: Icon(
-                  _isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+                  isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
                   color: const Color(0xFFD4AF37),
                 ),
               ),
@@ -136,7 +137,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           body: SafeArea(
             child: SingleChildScrollView(
-              // Esto evita el overflow amarillo/negro
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 4),
               child: Form(

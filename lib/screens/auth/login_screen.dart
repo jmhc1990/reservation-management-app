@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'register_screen.dart';
 import '../../controllers/auth_controller.dart';
+import '../../controllers/theme_controller.dart';
  
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,9 +17,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
- 
-  // Tema local
-  bool _isDark = true;
  
   @override
   void dispose() {
@@ -54,17 +52,20 @@ class _LoginScreenState extends State<LoginScreen> {
  
   @override
   Widget build(BuildContext context) {
+    final themeCtrl = context.watch<ThemeController>();
+    final isDark = themeCtrl.isDark;
+
     // Colores que cambian según el tema
-    final bg         = _isDark ? const Color(0xFF0F0F1A) : const Color(0xFFFDFBF7);
-    final cardBg     = _isDark ? Colors.white.withValues(alpha: 0.06) : Colors.grey.withValues(alpha: 0.1);
-    final textColor  = _isDark ? Colors.white : const Color(0xFF1A1A1A);
-    final subColor   = _isDark ? Colors.white60 : Colors.black54;
-    final iconColor  = _isDark ? Colors.white54 : const Color(0xFF1A1A1A);
+    final bg         = isDark ? const Color(0xFF0F0F1A) : const Color(0xFFFDFBF7);
+    final cardBg     = isDark ? Colors.white.withValues(alpha: 0.06) : Colors.grey.withValues(alpha: 0.1);
+    final textColor  = isDark ? Colors.white : const Color(0xFF1A1A1A);
+    final subColor   = isDark ? Colors.white60 : Colors.black54;
+    final iconColor  = isDark ? Colors.white54 : const Color(0xFF1A1A1A);
     final focusBorder = const Color(0xFFD4AF37);
  
     // Ajusta el color de la barra de estado del sistema
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarBrightness: _isDark ? Brightness.dark : Brightness.light,
+      statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
     ));
  
     return Consumer<AuthController>(
@@ -77,10 +78,10 @@ class _LoginScreenState extends State<LoginScreen> {
             automaticallyImplyLeading: false,
             actions: [
               IconButton(
-                onPressed: () => setState(() => _isDark = !_isDark),
-                tooltip: _isDark ? 'Modo claro' : 'Modo oscuro',
+                onPressed: themeCtrl.toggle,
+                tooltip: isDark ? 'Modo claro' : 'Modo oscuro',
                 icon: Icon(
-                  _isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+                  isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
                   color: const Color(0xFFD4AF37),
                 ),
               ),
@@ -88,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           body: SafeArea(
             child: SingleChildScrollView(
-              // Esto evita el overflow amarillo/negro
+              // Evita el overflow amarillo/negro
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 4),
               child: Form(
@@ -96,6 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+ 
                     // Icono tijeras
                     Center(
                       child: Container(
