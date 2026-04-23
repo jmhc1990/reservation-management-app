@@ -3,7 +3,7 @@ import '../../../models/services.dart';
 import '../../../services/catalog_service.dart';
 import 'service_form_screen.dart';
 
-class ServicesListScreen extends StatelessWidget {
+class ServicesListScreen extends StatefulWidget {
   final bool isAdmin;
 
   const ServicesListScreen({
@@ -12,13 +12,20 @@ class ServicesListScreen extends StatelessWidget {
   });
 
   @override
+  State<ServicesListScreen> createState() => _ServicesListScreenState();
+}
+
+class _ServicesListScreenState extends State<ServicesListScreen> {
+  final _catalogService = CatalogService();
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Servicios'),
       actions: [
         // Solo mostrar botón de añadir si es admin
-        if (isAdmin)
+        if (widget.isAdmin)
           IconButton(
             onPressed: () {
               Navigator.push(
@@ -34,7 +41,7 @@ class ServicesListScreen extends StatelessWidget {
       ]
       ),
       body: StreamBuilder<List<ModeloServicio>>(
-        stream: CatalogService().streamServices(),
+        stream: _catalogService.streamServices(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(child: Text('Error cargando servicios'));
@@ -57,7 +64,7 @@ class ServicesListScreen extends StatelessWidget {
               final servicio = services[index];
               return _ServiceCard(
                 servicio: servicio,
-                isAdmin: isAdmin,
+                isAdmin: widget.isAdmin,
               );
             },
           );
@@ -70,8 +77,10 @@ class ServicesListScreen extends StatelessWidget {
 class _ServiceCard extends StatelessWidget {
   final ModeloServicio servicio;
   final bool isAdmin;
+  final CatalogService _catalogService = CatalogService();
 
-  const _ServiceCard({
+  _ServiceCard({
+    super.key,
     required this.servicio,
     required this.isAdmin,
   });
@@ -100,7 +109,7 @@ class _ServiceCard extends StatelessWidget {
 
     if (confirmed == true) {
       try {
-        await CatalogService().deleteService(servicio.id);
+        await _catalogService.deleteService(servicio.id);
         if(context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Servicio eliminado')),
@@ -132,9 +141,10 @@ class _ServiceCard extends StatelessWidget {
                 // Editar - pendiente implementar
                 IconButton(
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar( 
-                        content: Text('Edición de servicios no implementada'),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ServiceFormScreen(servicio: servicio),
                       ),
                     );
                   },

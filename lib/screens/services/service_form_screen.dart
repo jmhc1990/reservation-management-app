@@ -6,7 +6,12 @@ import '../../../models/services.dart';
 import '../../../services/catalog_service.dart';
 
 class ServiceFormScreen extends StatefulWidget {
-  const ServiceFormScreen({super.key});
+  final ModeloServicio? servicio; // Si es null, se crea uno nuevo
+
+  const ServiceFormScreen({
+    super.key,
+    this.servicio,
+  });
 
   @override
   State<ServiceFormScreen> createState() => _ServiceFormScreenState();
@@ -23,6 +28,20 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
   File? _image;
   bool _isLoading = false;
 
+  // Si servicio es null, estamos creando uno nuevo, si no, estamos editando
+  bool get _isEditing => widget.servicio != null; 
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isEditing) {
+      _nameController.text = widget.servicio!.name;
+      _descriptionController.text = widget.servicio!.description;
+      _priceController.text = widget.servicio!.price.toString();
+      _durationController.text = widget.servicio!.duration.toString();
+    }
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -35,35 +54,32 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
   // Seleccionar imagen con validación de tamaño
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-
     final pickedFile = await picker.pickImage(
       source: ImageSource.gallery,
     );
 
-    if (pickedFile != null) {
-      final file = File(pickedFile.path);
+      if (pickedFile != null) {
+        final file = File(pickedFile.path);
+        final sizeInMB = await file.length() / (1024 * 1024);
 
-      final sizeInBytes = await file.length();
-      final sizeInMB = sizeInBytes / (1024 * 1024);
+        // 🔥 Validación < 5MB
+        if (sizeInMB > 5) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('La imagen supera los 5MB'),
+            ),
+          );
+          return;
+        }
 
-      // 🔥 Validación < 5MB
-      if (sizeInMB > 5) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('La imagen supera los 5MB'),
-          ),
-        );
-        return;
+        setState(() {
+          _image = file;
+        });
       }
-
-      setState(() {
-        _image = file;
-      });
-    }
   }
 
-  // Guardar servicio en Firestore
+  // Guardar o actualizar servicio en Firestore
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -71,22 +87,40 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final servicio = ModeloServicio(
-        id: '', // Firestore asignará el ID automáticamente
-        name: _nameController.text.trim(),
-        description: _descriptionController.text.trim(),
-        price: double.parse(_priceController.text.trim()),
-        duration: int.parse(_durationController.text.trim()),
-      );
+      if (_isEditing) {
+        // Para actualizar, mantenemos el mismo ID y solo cambiamos los campos editables
+        final updatedServicio = widget.servicio!.copyWith(
+          name: _nameController.text.trim(),
+          description: _descriptionController.text.trim(),
+          price: double.parse(_priceController.text.trim()),
+          duration: int.parse(_durationController.text.trim()),
+        );
 
-      await _catalogService.createService(servicio);
+        await _catalogService.updateService(updatedServicio);
+      } else {
+        // Para crear un nuevo servicio, el ID se genera automáticamente en Firestore
+        final servicio = ModeloServicio(
+          id: '',
+          name: _nameController.text.trim(),
+          description: _descriptionController.text.trim(),
+          price: double.parse(_priceController.text.trim()),
+          duration: int.parse(_durationController.text.trim()),
+        );
 
-      if(!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Servicio creado correctamente')),
-      );
-      Navigator.pop(context);
-
+        await _catalogService.createService(servicio);
+      }
+        if(!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _isEditing
+                ? 'Servicio actualizado correctamente'
+                : 'Servicio creado correctamente'
+            )
+          ),
+        );
+        Navigator.pop(context);
+      
     } catch (e) {
         if(!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -100,7 +134,14 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Crear servicio')),
+      appBar: AppBar(
+        // Cambia el título según si estamos editando o creando
+        title: Text(
+          _isEditing 
+            ? 'Editar servicio'
+            : 'Crear servicio'
+        )
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -217,8 +258,13 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                       width: 22,
                       child: CircularProgressIndicator(strokeWidth: 2.5),
                   )
-                  : const Text('Guardar servicio'),
+                  : Text(
+                    // El texto del botón cambia según si estamos editando o creando
+                    _isEditing 
+                      ? 'Actualizar servicio' 
+                      : 'Crear servicio'
                   ),
+              ),
             ],
           ),
         ),
