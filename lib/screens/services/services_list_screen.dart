@@ -33,18 +33,37 @@ class ServicesListScreen extends StatelessWidget {
               final imagePath = data['image_url'];
 
               return Card(
-                margin: const EdgeInsets.all(10),
-                child: ListTile(
-                  leading: imagePath != null
-                      ? Image.file(
-                          File(imagePath),
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
-                        )
-                      : const Icon(Icons.image),
-                  title: Text(data['name'] ?? ''),
-                  subtitle: Text('${data['price']}€ - ${data['duration']} min'),
+                color: const Color(0xFF1A1A1A),
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  side: const BorderSide(color: Color(0xFFD4AF37), width: 0.8),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: const Padding(
+                  padding: EdgeInsets.all(12.0),
+                  child: Row(
+                    children: [
+                      Icon(Icons.cut, color: Color(0xFFD4AF37), size: 40),
+                      SizedBox(width: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Nombre del Servicio',
+                            style: TextStyle(
+                              color: Color(0xFFD4AF37),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Duración y precio',
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
