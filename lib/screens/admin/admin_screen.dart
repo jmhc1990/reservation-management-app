@@ -1,14 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../controllers/auth_controller.dart';
 import '../services/services_list_screen.dart';
 
 class AdminScreen extends StatelessWidget {
   const AdminScreen({super.key});
+
+  Future<void> _handleLogout(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cerrar sesión'),
+        content: const Text('¿Estás seguro de que quieres cerrar sesión?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Cerrar sesión'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) {
+      await context.read<AuthController>().logout();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Panel de administración'),
+        actions: [
+          IconButton(
+            onPressed: () => _handleLogout(context),
+            icon: const Icon(Icons.logout),
+            tooltip: 'Cerrar sesión',
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
