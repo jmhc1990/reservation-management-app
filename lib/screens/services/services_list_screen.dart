@@ -43,7 +43,6 @@ class ServicesListScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(12.0),
                   child: Row(
                     children: [
-                      // IMAGEN CORREGIDA: Usa network para Firebase
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: SizedBox(
@@ -73,7 +72,7 @@ class ServicesListScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      // TEXTOS: Con Expanded para evitar las rayas amarillas
+
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
