@@ -76,9 +76,29 @@ class _UserCard extends StatelessWidget {
   // Texto del rol y especialización
   String _roleLabel(ModeloUsuario user) {
     if (user.role == RolUsuario.staff && user.specialization != null) {
-      return 'Staff · ${user.specialization!.name}';
+      return 'Staff · ${_specializationLabel(user.specialization!)}';
     }
-    return user.role.name;
+    return _roleName(user.role);
+  }
+  
+  String _roleName(RolUsuario role) {
+    switch (role) {
+      case RolUsuario.admin:
+        return 'Admin';
+      case RolUsuario.staff:
+        return 'Staff';
+      case RolUsuario.client:
+        return 'Cliente';
+    }
+  }
+
+  String _specializationLabel(Specialization specialization) {
+    switch (specialization) {
+      case Specialization.barber:
+        return 'Barbero';
+      case Specialization.stylist:
+        return 'Estilista';
+    }
   }
 
   Future<void> _showRoleDialog(BuildContext context) async {
@@ -105,7 +125,7 @@ class _UserCard extends StatelessWidget {
                   items: RolUsuario.values.map((role) {
                     return DropdownMenuItem(
                       value: role,
-                      child: Text(role.name),
+                      child: Text(_roleName(role)),
                     );
                   }).toList(),
                   onChanged: (value) {
@@ -130,10 +150,12 @@ class _UserCard extends StatelessWidget {
                     value: selectedSpecialization,
                     isExpanded: true,
                     hint: const Text('Seleccionar especialización'),
-                    items: Specialization.values.map((spec) {
+                    items: Specialization.values.map((specialization) {
                       return DropdownMenuItem(
-                        value: spec,
-                        child: Text(spec.name),
+                        value: specialization,
+                        child: Text(
+                          _specializationLabel(specialization),
+                        ),
                       );
                     }).toList(),
                     onChanged: (value) {
