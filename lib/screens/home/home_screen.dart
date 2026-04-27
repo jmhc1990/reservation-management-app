@@ -64,7 +64,7 @@ class HomeScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const ServicesListScreen(isAdmin: false), // HAY QUE CAMBIAR ESTO PARA QUE SOLO LOS ADMIN VEAN LOS BOTONES DE EDICIÓN
+                    builder: (_) => const ServicesListScreen(isAdmin: false),
                   ),
                 );
               },
