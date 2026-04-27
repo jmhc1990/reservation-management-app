@@ -17,8 +17,8 @@ class ModeloServicio {
     return ModeloServicio(
       id: map['id'] ?? '',
       name: map['name'] ?? '',
-      price: (map['price'] ?? 0).toDouble(),
-      duration: map['duration'] ?? 0,
+      price: double.tryParse(map['price']?.toString() ?? '0') ?? 0,
+      duration: int.tryParse(map['duration']?.toString() ?? '0') ?? 0,
       description: map['description'] ?? '',
     );
   }

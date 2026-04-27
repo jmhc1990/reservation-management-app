@@ -1,56 +1,166 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../models/services.dart';
+import '../../../services/catalog_service.dart';
+import 'service_form_screen.dart';
 
-class ServicesListScreen extends StatelessWidget {
-  const ServicesListScreen({super.key});
+class ServicesListScreen extends StatefulWidget {
+  final bool isAdmin;
+
+  const ServicesListScreen({
+    super.key,
+    this.isAdmin = false,
+  });
+
+  @override
+  State<ServicesListScreen> createState() => _ServicesListScreenState();
+}
+
+class _ServicesListScreenState extends State<ServicesListScreen> {
+  final _catalogService = CatalogService();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Servicios')),
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('services').snapshots(),
+      appBar: AppBar(
+        title: const Text('Servicios'),
+      actions: [
+        // Solo mostrar botón de añadir si es admin
+        if (widget.isAdmin)
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const ServiceFormScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.add),
+            tooltip: 'Añadir servicio',
+          )
+      ]
+      ),
+      body: StreamBuilder<List<ModeloServicio>>(
+        stream: _catalogService.streamServices(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(child: Text('Error cargando servicios'));
           }
 
-          if (!snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final services = snapshot.data!.docs;
+          final services = snapshot.data ?? [];
 
           if (services.isEmpty) {
             return const Center(child: Text('No hay servicios'));
           }
 
           return ListView.builder(
+            padding: const EdgeInsets.all(10),
             itemCount: services.length,
             itemBuilder: (context, index) {
-              final data = services[index].data();
-              final imagePath = data['image_url'];
-
-              return Card(
-                margin: const EdgeInsets.all(10),
-                child: ListTile(
-                  leading: imagePath != null
-                      ? Image.file(
-                          File(imagePath),
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
-                        )
-                      : const Icon(Icons.image),
-                  title: Text(data['name'] ?? ''),
-                  subtitle: Text('${data['price']}€ - ${data['duration']} min'),
-                ),
+              final servicio = services[index];
+              return _ServiceCard(
+                servicio: servicio,
+                isAdmin: widget.isAdmin,
               );
             },
           );
         },
       ),
+    );
+  }
+}
+
+class _ServiceCard extends StatelessWidget {
+  final ModeloServicio servicio;
+  final bool isAdmin;
+  final CatalogService _catalogService = CatalogService();
+
+  _ServiceCard({
+    super.key,
+    required this.servicio,
+    required this.isAdmin,
+  });
+
+  Future<void> _handleDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Eliminar servicio'),
+        content: Text('¿Estás seguro de que quieres eliminar "${servicio.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Eliminar',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      )
+    );
+
+    if (confirmed == true) {
+      try {
+        await _catalogService.deleteService(servicio.id);
+        if(context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Servicio eliminado')),
+          );
+        }
+      } catch(e) {
+        if(context.mounted){
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error al eliminar: $e')),
+          );
+        }
+        
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ListTile(
+        leading: const Icon(Icons.cut, size: 40),
+        title: Text(servicio.name),
+        subtitle: Text('${servicio.price}€ · ${servicio.duration} min'),
+        trailing: isAdmin
+            ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Editar - pendiente implementar
+                IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ServiceFormScreen(servicio: servicio),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.edit_outlined),
+                  tooltip: 'Editar servicio',
+                ),
+                // Eliminar
+                IconButton(
+                  onPressed: () => _handleDelete(context),
+                  icon: const Icon(Icons.delete_outline, color: Colors.red),
+                  tooltip: 'Eliminar servicio',
+                ),
+              ],
+            )
+            : null,
+        ),
     );
   }
 }
