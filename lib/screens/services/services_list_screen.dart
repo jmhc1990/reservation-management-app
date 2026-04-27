@@ -80,7 +80,6 @@ class _ServiceCard extends StatelessWidget {
   final CatalogService _catalogService = CatalogService();
 
   _ServiceCard({
-    super.key,
     required this.servicio,
     required this.isAdmin,
   });
