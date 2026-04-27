@@ -2,8 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../controllers/auth_controller.dart';
-import '../admin/admin_screen.dart';
-import '../services/service_form_screen.dart';
 import '../services/services_list_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -66,34 +64,7 @@ class HomeScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const AdminScreen(),
-                  ),
-                );
-              },
-              child: const Text('Panel de administración'),
-            ),
-            const SizedBox(height: 20),
-
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const ServiceFormScreen(),
-                  ),
-                );
-              },
-              child: const Text('Crear servicio'),
-            ),
-
-            const SizedBox(height: 10),
-
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const ServicesListScreen(isAdmin: true), // HAY QUE CAMBIAR ESTO PARA QUE SOLO LOS ADMIN VEAN LOS BOTONES DE EDICIÓN
+                    builder: (_) => const ServicesListScreen(isAdmin: false), // HAY QUE CAMBIAR ESTO PARA QUE SOLO LOS ADMIN VEAN LOS BOTONES DE EDICIÓN
                   ),
                 );
               },
