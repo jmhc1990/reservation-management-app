@@ -1,7 +1,8 @@
 # style_sync
 
 A new Flutter project.
-
+🎨 Diseño del Proyecto
+👉 [Ver archivos en Figma](https://www.figma.com/design/Uo8QEWR8LchOKp1LqZrizK/StyleSync-Design-System?node-id=0-1&t=QNwzcLZfKBrV0e7o-1)
 ## Getting Started
 
 This project is a starting point for a Flutter application.

@@ -1,123 +1,224 @@
-import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../models/services.dart';
+import '../../../services/catalog_service.dart';
+import './service_form_screen.dart';
 
-class ServicesListScreen extends StatelessWidget {
-  const ServicesListScreen({super.key});
+class ServicesListScreen extends StatefulWidget {
+  final bool isAdmin;
+
+  const ServicesListScreen({super.key, this.isAdmin = false});
+
+  @override
+  State<ServicesListScreen> createState() => _ServicesListScreenState();
+}
+
+class _ServicesListScreenState extends State<ServicesListScreen> {
+  final _catalogService = CatalogService();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Servicios')),
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('services').snapshots(),
+      appBar: AppBar(
+        title: const Text('Servicios'),
+        actions: [
+          if (widget.isAdmin)
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => ServiceFormScreen()),
+                );
+              },
+              icon: const Icon(Icons.add),
+              tooltip: 'Añadir servicio',
+            ),
+        ],
+      ),
+      body: StreamBuilder<List<ModeloServicio>>(
+        stream: _catalogService.streamServices(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(child: Text('Error cargando servicios'));
           }
 
-          if (!snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final services = snapshot.data!.docs;
+          final services = snapshot.data ?? [];
 
           if (services.isEmpty) {
             return const Center(child: Text('No hay servicios'));
           }
 
           return ListView.builder(
+            padding: const EdgeInsets.all(10),
             itemCount: services.length,
             itemBuilder: (context, index) {
-              final data = services[index].data();
-              final String? imagePath = data['image_url'];
-
-              return Card(
-                color: const Color(0xFF1A1A1A),
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  side: const BorderSide(color: Color(0xFFD4AF37), width: 0.8),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Row(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: SizedBox(
-                          width: 70,
-                          height: 70,
-                          child:
-                              imagePath != null && imagePath.startsWith('http')
-                              ? Image.network(
-                                  imagePath,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      Container(
-                                        color: Colors.white10,
-                                        child: const Icon(
-                                          Icons.cut,
-                                          color: Color(0xFFD4AF37),
-                                        ),
-                                      ),
-                                )
-                              : Container(
-                                  color: Colors.white10,
-                                  child: const Icon(
-                                    Icons.cut,
-                                    color: Color(0xFFD4AF37),
-                                  ),
-                                ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              data['name'] ?? 'Servicio',
-                              style: const TextStyle(
-                                color: Color(0xFFD4AF37),
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${data['duration'] ?? '0'} min • ${data['price'] ?? '0'}€',
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              data['description'] ?? 'Sin descripción',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Icon(
-                        Icons.arrow_forward_ios,
-                        color: Color(0xFFD4AF37),
-                        size: 16,
-                      ),
-                    ],
-                  ),
-                ),
-              );
+              final servicio = services[index];
+              return _ServiceCard(servicio: servicio, isAdmin: widget.isAdmin);
             },
           );
         },
+      ),
+    );
+  }
+}
+
+class _ServiceCard extends StatelessWidget {
+  final ModeloServicio servicio;
+  final bool isAdmin;
+  final CatalogService _catalogService = CatalogService();
+
+  _ServiceCard({required this.servicio, required this.isAdmin});
+
+  Future<void> _handleDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Eliminar servicio'),
+        content: Text(
+          '¿Estás seguro de que quieres eliminar "${servicio.name}"?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await _catalogService.deleteService(servicio.id);
+        if (context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Servicio eliminado')));
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error al eliminar: $e')));
+        }
+      }
+    }
+  }
+
+  Widget _buildImage() {
+    if (servicio.imageUrl == null || servicio.imageUrl!.isEmpty) {
+      return Container(
+        color: Colors.white10,
+        child: const Icon(Icons.cut, color: Color(0xFFD4AF37)),
+      );
+    }
+    if (servicio.imageUrl!.startsWith('http')) {
+      return Image.network(
+        servicio.imageUrl!,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Container(
+          color: Colors.white10,
+          child: const Icon(Icons.cut, color: Color(0xFFD4AF37)),
+        ),
+      );
+    } else {
+      try {
+        return Image.memory(
+          base64Decode(servicio.imageUrl!),
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            color: Colors.white10,
+            child: const Icon(Icons.cut, color: Color(0xFFD4AF37)),
+          ),
+        );
+      } catch (_) {
+        return Container(
+          color: Colors.white10,
+          child: const Icon(Icons.cut, color: Color(0xFFD4AF37)),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: const Color(0xFF1A1A1A),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(
+        side: const BorderSide(color: Color(0xFFD4AF37), width: 0.8),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: SizedBox(width: 70, height: 70, child: _buildImage()),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    servicio.name,
+                    style: const TextStyle(
+                      color: Color(0xFFD4AF37),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${servicio.duration} min • ${servicio.price}€',
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+            if (isAdmin)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ServiceFormScreen(servicio: servicio),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.edit_outlined,
+                      color: Color(0xFFD4AF37),
+                    ),
+                    tooltip: 'Editar servicio',
+                  ),
+                  IconButton(
+                    onPressed: () => _handleDelete(context),
+                    icon: const Icon(Icons.delete_outline, color: Colors.red),
+                    tooltip: 'Eliminar servicio',
+                  ),
+                ],
+              )
+            else
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: Color(0xFFD4AF37),
+                size: 16,
+              ),
+          ],
+        ),
       ),
     );
   }
