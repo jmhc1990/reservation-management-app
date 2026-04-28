@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../../models/services.dart';
 import '../../../services/catalog_service.dart';
@@ -125,12 +126,30 @@ class _ServiceCard extends StatelessWidget {
     }
   }
 
+  Widget _buildImage() {
+    if (servicio.imageUrl == null) return const Icon(Icons.cut, size: 40);
+    try {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: Image.memory(
+          base64Decode(servicio.imageUrl!),
+          width: 50,
+          height: 50,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => const Icon(Icons.cut, size: 40),
+        ),
+      );
+    } catch (_) {
+      return const Icon(Icons.cut, size: 40);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
-        leading: const Icon(Icons.cut, size: 40),
+        leading: _buildImage(),
         title: Text(servicio.name),
         subtitle: Text('${servicio.price}€ · ${servicio.duration} min'),
         trailing: isAdmin

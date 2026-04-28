@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,10 +27,11 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
 
   final _catalogService = CatalogService();
   File? _image;
+  String? _existingImageBase64;
   bool _isLoading = false;
 
   // Si servicio es null, estamos creando uno nuevo, si no, estamos editando
-  bool get _isEditing => widget.servicio != null; 
+  bool get _isEditing => widget.servicio != null;
 
   @override
   void initState() {
@@ -39,6 +41,7 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
       _descriptionController.text = widget.servicio!.description;
       _priceController.text = widget.servicio!.price.toString();
       _durationController.text = widget.servicio!.duration.toString();
+      _existingImageBase64 = widget.servicio!.imageUrl;
     }
   }
 
@@ -56,27 +59,27 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(
       source: ImageSource.gallery,
+      maxWidth: 800,
+      maxHeight: 600,
+      imageQuality: 70,
     );
 
-      if (pickedFile != null) {
-        final file = File(pickedFile.path);
-        final sizeInMB = await file.length() / (1024 * 1024);
+    if (pickedFile != null) {
+      final file = File(pickedFile.path);
+      final sizeInMB = await file.length() / (1024 * 1024);
 
-        // 🔥 Validación < 5MB
-        if (sizeInMB > 5) {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('La imagen supera los 5MB'),
-            ),
-          );
-          return;
-        }
-
-        setState(() {
-          _image = file;
-        });
+      if (sizeInMB > 5) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('La imagen supera los 5MB')),
+        );
+        return;
       }
+
+      setState(() {
+        _image = file;
+      });
+    }
   }
 
   // Guardar o actualizar servicio en Firestore
@@ -87,6 +90,14 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
     setState(() => _isLoading = true);
 
     try {
+      String? imageBase64;
+      if (_image != null) {
+        final bytes = await _image!.readAsBytes();
+        imageBase64 = base64Encode(bytes);
+      } else if (_isEditing) {
+        imageBase64 = _existingImageBase64;
+      }
+
       if (_isEditing) {
         // Para actualizar, mantenemos el mismo ID y solo cambiamos los campos editables
         final updatedServicio = widget.servicio!.copyWith(
@@ -94,6 +105,7 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
           description: _descriptionController.text.trim(),
           price: double.parse(_priceController.text.trim()),
           duration: int.parse(_durationController.text.trim()),
+          imageUrl: imageBase64,
         );
 
         await _catalogService.updateService(updatedServicio);
@@ -105,6 +117,7 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
           description: _descriptionController.text.trim(),
           price: double.parse(_priceController.text.trim()),
           duration: int.parse(_durationController.text.trim()),
+          imageUrl: imageBase64,
         );
 
         await _catalogService.createService(servicio);
@@ -230,7 +243,6 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Imagen (temporal)
               OutlinedButton.icon(
                 onPressed: _pickImage,
                 icon: const Icon(Icons.image),
@@ -242,6 +254,16 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                   borderRadius: BorderRadius.circular(8),
                   child: Image.file(
                     _image!,
+                    height: 200,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ] else if (_existingImageBase64 != null) ...[
+                const SizedBox(height: 25),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.memory(
+                    base64Decode(_existingImageBase64!),
                     height: 200,
                     fit: BoxFit.cover,
                   ),
