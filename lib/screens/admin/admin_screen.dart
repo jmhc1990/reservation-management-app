@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../controllers/auth_controller.dart';
 import '../services/services_list_screen.dart';
+import 'users_list_screen.dart';
 
 class AdminScreen extends StatelessWidget {
   const AdminScreen({super.key});
@@ -68,11 +69,11 @@ class AdminScreen extends StatelessWidget {
             title: 'Usuarios',
             subtitle: 'Gestionar los usuarios',
             onTap: () {
-
-              // PENDIENTE IMPLEMENTAR
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Gestión de usuarios próximamente')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const UsersListScreen(),
+                ),
               );
             },
           ),
