@@ -2,15 +2,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../../models/services.dart';
 import '../../../services/catalog_service.dart';
-import 'service_form_screen.dart';
+import './service_form_screen.dart';
 
 class ServicesListScreen extends StatefulWidget {
   final bool isAdmin;
 
-  const ServicesListScreen({
-    super.key,
-    this.isAdmin = false,
-  });
+  const ServicesListScreen({super.key, this.isAdmin = false});
 
   @override
   State<ServicesListScreen> createState() => _ServicesListScreenState();
@@ -24,22 +21,19 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Servicios'),
-      actions: [
-        // Solo mostrar botón de añadir si es admin
-        if (widget.isAdmin)
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const ServiceFormScreen(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.add),
-            tooltip: 'Añadir servicio',
-          )
-      ]
+        actions: [
+          if (widget.isAdmin)
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => ServiceFormScreen()),
+                );
+              },
+              icon: const Icon(Icons.add),
+              tooltip: 'Añadir servicio',
+            ),
+        ],
       ),
       body: StreamBuilder<List<ModeloServicio>>(
         stream: _catalogService.streamServices(),
@@ -63,10 +57,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
             itemCount: services.length,
             itemBuilder: (context, index) {
               final servicio = services[index];
-              return _ServiceCard(
-                servicio: servicio,
-                isAdmin: widget.isAdmin,
-              );
+              return _ServiceCard(servicio: servicio, isAdmin: widget.isAdmin);
             },
           );
         },
@@ -80,17 +71,16 @@ class _ServiceCard extends StatelessWidget {
   final bool isAdmin;
   final CatalogService _catalogService = CatalogService();
 
-  _ServiceCard({
-    required this.servicio,
-    required this.isAdmin,
-  });
+  _ServiceCard({required this.servicio, required this.isAdmin});
 
   Future<void> _handleDelete(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Eliminar servicio'),
-        content: Text('¿Estás seguro de que quieres eliminar "${servicio.name}"?'),
+        content: Text(
+          '¿Estás seguro de que quieres eliminar "${servicio.name}"?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -98,87 +88,138 @@ class _ServiceCard extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Eliminar',
-              style: TextStyle(color: Colors.red),
-            ),
+            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
           ),
         ],
-      )
+      ),
     );
 
     if (confirmed == true) {
       try {
         await _catalogService.deleteService(servicio.id);
-        if(context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Servicio eliminado')),
-          );
+        if (context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Servicio eliminado')));
         }
-      } catch(e) {
-        if(context.mounted){
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error al eliminar: $e')),
-          );
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error al eliminar: $e')));
         }
-        
       }
     }
   }
 
   Widget _buildImage() {
-    if (servicio.imageUrl == null) return const Icon(Icons.cut, size: 40);
-    try {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: Image.memory(
-          base64Decode(servicio.imageUrl!),
-          width: 50,
-          height: 50,
-          fit: BoxFit.cover,
-          errorBuilder: (_, _, _) => const Icon(Icons.cut, size: 40),
+    if (servicio.imageUrl == null || servicio.imageUrl!.isEmpty) {
+      return Container(
+        color: Colors.white10,
+        child: const Icon(Icons.cut, color: Color(0xFFD4AF37)),
+      );
+    }
+    if (servicio.imageUrl!.startsWith('http')) {
+      return Image.network(
+        servicio.imageUrl!,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Container(
+          color: Colors.white10,
+          child: const Icon(Icons.cut, color: Color(0xFFD4AF37)),
         ),
       );
-    } catch (_) {
-      return const Icon(Icons.cut, size: 40);
+    } else {
+      try {
+        return Image.memory(
+          base64Decode(servicio.imageUrl!),
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            color: Colors.white10,
+            child: const Icon(Icons.cut, color: Color(0xFFD4AF37)),
+          ),
+        );
+      } catch (_) {
+        return Container(
+          color: Colors.white10,
+          child: const Icon(Icons.cut, color: Color(0xFFD4AF37)),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: ListTile(
-        leading: _buildImage(),
-        title: Text(servicio.name),
-        subtitle: Text('${servicio.price}€ · ${servicio.duration} min'),
-        trailing: isAdmin
-            ? Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Editar - pendiente implementar
-                IconButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ServiceFormScreen(servicio: servicio),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.edit_outlined),
-                  tooltip: 'Editar servicio',
-                ),
-                // Eliminar
-                IconButton(
-                  onPressed: () => _handleDelete(context),
-                  icon: const Icon(Icons.delete_outline, color: Colors.red),
-                  tooltip: 'Eliminar servicio',
-                ),
-              ],
-            )
-            : null,
+      color: const Color(0xFF1A1A1A),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(
+        side: const BorderSide(color: Color(0xFFD4AF37), width: 0.8),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: SizedBox(width: 70, height: 70, child: _buildImage()),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    servicio.name,
+                    style: const TextStyle(
+                      color: Color(0xFFD4AF37),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${servicio.duration} min • ${servicio.price}€',
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+            if (isAdmin)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ServiceFormScreen(servicio: servicio),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.edit_outlined,
+                      color: Color(0xFFD4AF37),
+                    ),
+                    tooltip: 'Editar servicio',
+                  ),
+                  IconButton(
+                    onPressed: () => _handleDelete(context),
+                    icon: const Icon(Icons.delete_outline, color: Colors.red),
+                    tooltip: 'Eliminar servicio',
+                  ),
+                ],
+              )
+            else
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: Color(0xFFD4AF37),
+                size: 16,
+              ),
+          ],
         ),
+      ),
     );
   }
 }
