@@ -4,6 +4,7 @@ class ModeloServicio {
   final double price;
   final int duration;
   final String description;
+  final String? imageUrl;
 
   ModeloServicio({
     required this.id,
@@ -11,6 +12,7 @@ class ModeloServicio {
     required this.price,
     required this.duration,
     required this.description,
+    this.imageUrl,
   });
 
   factory ModeloServicio.fromMap(Map<String, dynamic> map) {
@@ -20,6 +22,7 @@ class ModeloServicio {
       price: double.tryParse(map['price']?.toString() ?? '0') ?? 0,
       duration: int.tryParse(map['duration']?.toString() ?? '0') ?? 0,
       description: map['description'] ?? '',
+      imageUrl: map['image_url'] as String?,
     );
   }
 
@@ -29,6 +32,7 @@ class ModeloServicio {
       'price': price,
       'duration': duration,
       'description': description,
+      if (imageUrl != null) 'image_url': imageUrl,
     };
   }
 
@@ -38,6 +42,7 @@ class ModeloServicio {
     double? price,
     int? duration,
     String? description,
+    String? imageUrl,
   }) {
     return ModeloServicio(
       id: id ?? this.id,
@@ -45,6 +50,7 @@ class ModeloServicio {
       price: price ?? this.price,
       duration: duration ?? this.duration,
       description: description ?? this.description,
+      imageUrl: imageUrl ?? this.imageUrl,
     );
   }
 }
