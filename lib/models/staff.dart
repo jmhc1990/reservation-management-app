@@ -1,3 +1,5 @@
+enum Specialization { barber, stylist }
+
 class TramoHorario {
   final String startHour;
   final String endHour;
@@ -27,6 +29,7 @@ class ModeloStaff {
   final String name;
   final String? photoUrl;
   final String bio;
+  final Specialization specialization;
   final List<String> specialties;
   final List<String> serviceIds;
   final Map<String, List<TramoHorario>?> workingHours; // null si es dia libre
@@ -37,6 +40,7 @@ class ModeloStaff {
     required this.name,
     this.photoUrl,
     required this.bio,
+    required this.specialization,
     this.specialties = const [],
     this.serviceIds = const [],
     this.workingHours = const {},
@@ -77,6 +81,10 @@ class ModeloStaff {
       name: map['name'] ?? '',
       photoUrl: map['photo_url'],
       bio: map['bio'] ?? '',
+      specialization: Specialization.values.firstWhere(
+        (e) => e.name == map['specialization'],
+        orElse: () => Specialization.barber, // Valor por defecto
+      ),
       specialties: List<String>.from(map['specialties'] ?? []),
       serviceIds: List<String>.from(map['service_ids'] ?? []),
       workingHours: workingHours,
@@ -94,6 +102,7 @@ class ModeloStaff {
       'name': name,
       'photo_url': photoUrl,
       'bio': bio,
+      'specialization': specialization.name,
       'specialties': specialties,
       'service_ids': serviceIds,
       'working_hours': rawHours,
@@ -106,6 +115,7 @@ class ModeloStaff {
     String? name,
     String? photoUrl,
     String? bio,
+    Specialization? specialization,
     List<String>? specialties,
     List<String>? serviceIds,
     Map<String, List<TramoHorario>?>? workingHours,
@@ -116,6 +126,7 @@ class ModeloStaff {
       name: name ?? this.name,
       photoUrl: photoUrl ?? this.photoUrl,
       bio: bio ?? this.bio,
+      specialization: specialization ?? this.specialization,
       specialties: specialties ?? this.specialties,
       serviceIds: serviceIds ?? this.serviceIds,
       workingHours: workingHours ?? this.workingHours,
