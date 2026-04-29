@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../controllers/auth_controller.dart';
 import '../services/services_list_screen.dart';
+import 'staff_list_screen.dart';
 import 'users_list_screen.dart';
+import '../../core/theme/app_colors.dart';
 
 class AdminScreen extends StatelessWidget {
   const AdminScreen({super.key});
@@ -79,17 +81,51 @@ class AdminScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
+          // Staff
+          _AdminMenuItem(
+            icon: Icons.manage_accounts,
+            title: 'Trabajadores',
+            subtitle: 'Gestionar información del personal',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const StaffListScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+
           // Vacaciones
           _AdminMenuItem(
             icon: Icons.beach_access,
             title: 'Vacaciones',
             subtitle: 'Gestionar vacaciones del personal',
             onTap: () {
+              // PENDIENTE IMPLEMENTAR
+              // placeholder que manda a la lista de usuarios
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const UsersListScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+
+          // Galeria
+          _AdminMenuItem(
+            icon: Icons.photo_library,
+            title: 'Galería',
+            subtitle: 'Gestionar imágenes de la galería',
+            onTap: () {
 
               // PENDIENTE IMPLEMENTAR
               
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Gestión de vacaciones próximamente')),
+                const SnackBar(content: Text('Gestión de galería próximamente')),
               );
             },
           ),
@@ -116,7 +152,7 @@ class _AdminMenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
-        leading: Icon(icon, size: 36, color: const Color(0xFFD4AF37)),
+        leading: Icon(icon, size: 36, color: AppColors.gold),
         title: Text(
           title,
           style: const TextStyle(fontWeight: FontWeight.bold),
