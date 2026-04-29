@@ -36,9 +36,9 @@ class BarberApp extends StatelessWidget {
           useMaterial3: true,
           colorScheme: const ColorScheme.dark(
             primary: AppColors.gold,
-            surface: AppColors.splashBackground,
+            surface: AppColors.darkBackground,
           ),
-          scaffoldBackgroundColor: AppColors.splashBackground,
+          scaffoldBackgroundColor: AppColors.darkBackground,
         ),
         // AuthWrapper decide automáticamente si mostrar Login o Home.
         home: const AuthWrapper(),

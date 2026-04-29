@@ -10,7 +10,7 @@ class AppColors{
   static const Color cancel = Color(0xFFC62828); // Rojo de cancelación
 
   // Fondos dark mode
-  static const Color splashBackground = Color(0xFF1A1A2E);
+  static const Color darkBackground = Color(0xFF1A1A2E);
 
   // Texto
   static const Color textSubtitle = Colors.white70;
