@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../models/services.dart';
 import '../../../services/catalog_service.dart';
 import './service_form_screen.dart';
+import '../../core/theme/app_colors.dart';
 
 class ServicesListScreen extends StatefulWidget {
   final bool isAdmin;
@@ -88,7 +89,7 @@ class _ServiceCard extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+            child: const Text('Eliminar', style: TextStyle(color: AppColors.cancel)),
           ),
         ],
       ),
@@ -116,7 +117,7 @@ class _ServiceCard extends StatelessWidget {
     if (servicio.imageUrl == null || servicio.imageUrl!.isEmpty) {
       return Container(
         color: Colors.white10,
-        child: const Icon(Icons.cut, color: Color(0xFFD4AF37)),
+        child: const Icon(Icons.cut, color: AppColors.gold),
       );
     }
     if (servicio.imageUrl!.startsWith('http')) {
@@ -125,7 +126,7 @@ class _ServiceCard extends StatelessWidget {
         fit: BoxFit.cover,
         errorBuilder: (_, __, ___) => Container(
           color: Colors.white10,
-          child: const Icon(Icons.cut, color: Color(0xFFD4AF37)),
+          child: const Icon(Icons.cut, color: AppColors.gold),
         ),
       );
     } else {
@@ -135,13 +136,13 @@ class _ServiceCard extends StatelessWidget {
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => Container(
             color: Colors.white10,
-            child: const Icon(Icons.cut, color: Color(0xFFD4AF37)),
+            child: const Icon(Icons.cut, color: AppColors.gold),
           ),
         );
       } catch (_) {
         return Container(
           color: Colors.white10,
-          child: const Icon(Icons.cut, color: Color(0xFFD4AF37)),
+          child: const Icon(Icons.cut, color: AppColors.gold),
         );
       }
     }
@@ -153,7 +154,7 @@ class _ServiceCard extends StatelessWidget {
       color: const Color(0xFF1A1A1A),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       shape: RoundedRectangleBorder(
-        side: const BorderSide(color: Color(0xFFD4AF37), width: 0.8),
+        side: const BorderSide(color: AppColors.gold, width: 0.8),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Padding(
@@ -172,7 +173,7 @@ class _ServiceCard extends StatelessWidget {
                   Text(
                     servicio.name,
                     style: const TextStyle(
-                      color: Color(0xFFD4AF37),
+                      color: AppColors.gold,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -180,7 +181,7 @@ class _ServiceCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     '${servicio.duration} min • ${servicio.price}€',
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                    style: const TextStyle(color: AppColors.textSubtitle, fontSize: 14),
                   ),
                 ],
               ),
@@ -200,13 +201,13 @@ class _ServiceCard extends StatelessWidget {
                     },
                     icon: const Icon(
                       Icons.edit_outlined,
-                      color: Color(0xFFD4AF37),
+                      color: AppColors.gold,
                     ),
                     tooltip: 'Editar servicio',
                   ),
                   IconButton(
                     onPressed: () => _handleDelete(context),
-                    icon: const Icon(Icons.delete_outline, color: Colors.red),
+                    icon: const Icon(Icons.delete_outline, color: AppColors.cancel),
                     tooltip: 'Eliminar servicio',
                   ),
                 ],
@@ -214,7 +215,7 @@ class _ServiceCard extends StatelessWidget {
             else
               const Icon(
                 Icons.arrow_forward_ios,
-                color: Color(0xFFD4AF37),
+                color: AppColors.gold,
                 size: 16,
               ),
           ],
