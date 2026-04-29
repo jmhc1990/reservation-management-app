@@ -30,7 +30,6 @@ service cloud.firestore {
     }
 
     // Colección users
-
     match /users/{uid} {
 
       // Leer: el usuario y staff pueden ver su perfil y admin puede verlos todos
@@ -54,8 +53,7 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Colección citas
-
+    // Colección citas (appointments)
     match /appointments/{appointmentId} {
 
       // Leer: Cliente ve sus citas, staff ve solo las suyas, admin ve todas
@@ -89,6 +87,26 @@ service cloud.firestore {
     match /services/{serviceId} {
 
       // Leer: cualquier usuario autenticado puede ver
+      allow read: if isAuthenticated();
+
+      // Crear, actualizar, eliminar: solo admin
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Colección: staff (empleados)
+    match /staff/{staffId} {
+
+      // Leer: cualquier usuario autenticado
+      allow read: if isAuthenticated();
+
+      // Crear, actualizar, eliminar: solo admin
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Colección: staff_off_days (vacaciones)
+    match /staff_off_days/{offDayId} {
+
+      // Leer: cualquier usuario autenticado
       allow read: if isAuthenticated();
 
       // Crear, actualizar, eliminar: solo admin
