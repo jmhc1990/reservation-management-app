@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../models/staff.dart';
+import '../models/staff.dart';
 
 class StaffService {
   final _db = FirebaseFirestore.instance;
