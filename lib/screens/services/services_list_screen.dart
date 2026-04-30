@@ -124,7 +124,7 @@ class _ServiceCard extends StatelessWidget {
       return Image.network(
         servicio.imageUrl!,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Container(
+        errorBuilder: (context, error, stackTrace) => Container(
           color: Colors.white10,
           child: const Icon(Icons.cut, color: AppColors.gold),
         ),
@@ -134,7 +134,7 @@ class _ServiceCard extends StatelessWidget {
         return Image.memory(
           base64Decode(servicio.imageUrl!),
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Container(
+          errorBuilder: (context, error, stackTrace) => Container(
             color: Colors.white10,
             child: const Icon(Icons.cut, color: AppColors.gold),
           ),
