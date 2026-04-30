@@ -6,9 +6,12 @@ import 'controllers/theme_controller.dart';
 import 'firebase_options.dart'; // Generado por flutterfire configure
 import 'navigation/auth_wrapper.dart';
 import 'core/theme/app_colors.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/date_symbol_data_local.dart';
  
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('es', null); // Inicializar formato de fechas en español
  
   // Inicializar Firebase antes de arrancar la app.
   await Firebase.initializeApp(
@@ -30,6 +33,15 @@ class BarberApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeController()),
       ],
       child: MaterialApp(
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('es', 'ES'), // Español
+        ],
+        locale: const Locale('es', 'ES'), // Establecer español como idioma predeterminado
         title: 'Barber App',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(

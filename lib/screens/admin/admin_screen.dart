@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../controllers/auth_controller.dart';
 import '../services/services_list_screen.dart';
 import 'staff_list_screen.dart';
+import 'staff_selector_screen.dart';
 import 'users_list_screen.dart';
 import '../../core/theme/app_colors.dart';
 
@@ -103,12 +104,10 @@ class AdminScreen extends StatelessWidget {
             title: 'Vacaciones',
             subtitle: 'Gestionar vacaciones del personal',
             onTap: () {
-              // PENDIENTE IMPLEMENTAR
-              // placeholder que manda a la lista de usuarios
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const UsersListScreen(),
+                  builder: (_) => const StaffSelectorScreen(),
                 ),
               );
             },

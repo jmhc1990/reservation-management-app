@@ -3,9 +3,10 @@ import '../../models/staff.dart';
 import '../../services/staff_service.dart';
 import 'staff_form_screen.dart';
 import '../../core/theme/app_colors.dart';
+import 'staff_off_days_screen.dart';
 
 class StaffListScreen extends StatefulWidget {
-  const StaffListScreen({super.key});
+  const StaffListScreen({super.key,});
 
   @override
   State<StaffListScreen> createState() => _StaffListScreenState();
@@ -186,6 +187,19 @@ class _StaffCard extends StatelessWidget {
               },
               icon: const Icon(Icons.edit_outlined),
               tooltip: 'Editar trabajador',
+            ),
+            // Ver ausencias
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => StaffOffDaysScreen(staff: staff),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.beach_access, color: AppColors.gold),
+              tooltip: 'Gestionar ausencias',
             ),
             // Eliminar
             IconButton(
