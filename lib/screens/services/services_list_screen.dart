@@ -28,7 +28,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => ServiceFormScreen()),
+                  MaterialPageRoute(builder: (_) => const ServiceFormScreen()),
                 );
               },
               icon: const Icon(Icons.add),
@@ -151,7 +151,7 @@ class _ServiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: const Color(0xFF1A1A1A),
+      color: AppColors.black,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       shape: RoundedRectangleBorder(
         side: const BorderSide(color: AppColors.gold, width: 0.8),
