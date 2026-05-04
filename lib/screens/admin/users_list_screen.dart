@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/user.dart';
+import '../../models/staff.dart';
 import '../../services/user_service.dart';
 
 class UsersListScreen extends StatefulWidget {
