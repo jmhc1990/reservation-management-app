@@ -21,7 +21,6 @@ class _StaffOffDaysScreenState extends State<StaffOffDaysScreen> {
   final _offDayService = StaffOffDayService();
   List<ModeloStaffOffDay> _offDays = [];
   DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
 
   // Color por tipo de ausencia
   Color _reasonColor(TipoAusencia reason) {
@@ -257,7 +256,7 @@ class _StaffOffDaysScreenState extends State<StaffOffDaysScreen> {
         title: Text('Ausencias — ${widget.staff.name}'),
         actions: [
           IconButton(
-            onPressed: () => _showAddDialog(_selectedDay),
+            onPressed: () => _showAddDialog(null),
             icon: const Icon(Icons.add),
             tooltip: 'Añadir ausencia',
           ),
@@ -280,18 +279,15 @@ class _StaffOffDaysScreenState extends State<StaffOffDaysScreen> {
               // Calendario
               TableCalendar(
                 locale: 'es_ES',
+                availableCalendarFormats: const {
+                  CalendarFormat.month: 'Mes', // solo deja la vista mensual
+                },
                 startingDayOfWeek: StartingDayOfWeek.monday,
                 firstDay: DateTime(DateTime.now().year - 1),
                 lastDay: DateTime(DateTime.now().year + 2),
                 focusedDay: _focusedDay,
-                selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
                 onDaySelected: (selectedDay, focusedDay) {
-                  setState(() {
-                    _selectedDay = selectedDay;
-                    _focusedDay = focusedDay;
-                  });
-                  // Si el día pulsado tiene ausencia, no abre el dialog
-                  // Si está libre, abre el dialog con esa fecha
+                  setState(() => _focusedDay = focusedDay);
                   if (_getReasonForDay(selectedDay) == null) {
                     _showAddDialog(selectedDay);
                   }
@@ -306,10 +302,6 @@ class _StaffOffDaysScreenState extends State<StaffOffDaysScreen> {
                     color: Colors.transparent,
                   ),
                   todayTextStyle: const TextStyle(color: Colors.white),
-                  selectedDecoration: const BoxDecoration(
-                    color: AppColors.gold,
-                    shape: BoxShape.circle,
-                  ),
                 ),
                 calendarBuilders: CalendarBuilders(
                   defaultBuilder: (context, day, focusedDay) {
