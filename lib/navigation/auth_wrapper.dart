@@ -7,6 +7,7 @@ import '../screens/auth/login_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/admin/admin_screen.dart';
 import '../services/firestore_service.dart';
+import '../core/theme/app_colors.dart';
 
 /// widget raíz que escucha el estado de autenticación de Firebase
 /// y redirige al usuario a la pantalla correcta de forma automática.
@@ -61,19 +62,19 @@ class _SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: Color(0xFF1A1A2E),
+      backgroundColor: AppColors.darkBackground,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.content_cut,
-              color: Color(0xFFD4AF37),
+              color: AppColors.gold,
               size: 64,
             ),
             SizedBox(height: 24),
             CircularProgressIndicator(
-              color: Color(0xFFD4AF37),
+              color: AppColors.gold,
               strokeWidth: 2,
             ),
           ],

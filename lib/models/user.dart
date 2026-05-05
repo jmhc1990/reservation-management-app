@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'staff.dart';
 
 enum RolUsuario { client, staff, admin }
-enum Specialization { barber, stylist }
 
 // Modelo de usuario
 class ModeloUsuario {
