@@ -7,6 +7,23 @@
         { "fieldPath": "staff_id", "order": "ASCENDING" },
         { "fieldPath": "start_date", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "appointments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "staff_id", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "start_time", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "appointments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "client_id", "order": "ASCENDING" },
+        { "fieldPath": "start_time", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
