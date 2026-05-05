@@ -1,14 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../controllers/auth_controller.dart';
+import '../../core/theme/app_colors.dart';
 import '../services/services_list_screen.dart';
+import 'users_list_screen.dart';
 import 'staff_list_screen.dart';
 import 'staff_selector_screen.dart';
-import 'users_list_screen.dart';
-import '../../core/theme/app_colors.dart';
+import 'appointments_screen.dart';
 
-class AdminScreen extends StatelessWidget {
+class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
+
+  @override
+  State<AdminScreen> createState() => _AdminScreenState();
+}
+
+class _AdminScreenState extends State<AdminScreen> {
+  int _selectedIndex = 0;
+
+  final List<Widget> _screens = [
+    const AppointmentsScreen(),
+    const ServicesListScreen(isAdmin: true),
+    const UsersListScreen(),
+    const StaffListScreen(),
+    const StaffSelectorScreen(),
+  ];
 
   Future<void> _handleLogout(BuildContext context) async {
     final confirmed = await showDialog<bool>(
@@ -46,119 +62,36 @@ class AdminScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-
-          // Servicios
-          _AdminMenuItem(
-            icon: Icons.cut,
-            title: 'Servicios',
-            subtitle: 'Gestionar catálogo de servicios',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const ServicesListScreen(isAdmin: true),
-                ),
-              );
-            },
+      body: _screens[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) => setState(() => _selectedIndex = index),
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: AppColors.gold,
+        unselectedItemColor: AppColors.textSubtitle,
+        backgroundColor: AppColors.black,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_month),
+            label: 'Citas',
           ),
-          const SizedBox(height: 20),
-
-          // Usuarios
-          _AdminMenuItem(
-            icon: Icons.people,
-            title: 'Usuarios',
-            subtitle: 'Gestionar los usuarios',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const UsersListScreen(),
-                ),
-              );
-            },
+          BottomNavigationBarItem(
+            icon: Icon(Icons.cut),
+            label: 'Servicios',
           ),
-          const SizedBox(height: 20),
-
-          // Staff
-          _AdminMenuItem(
-            icon: Icons.manage_accounts,
-            title: 'Trabajadores',
-            subtitle: 'Gestionar información del personal',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const StaffListScreen(),
-                ),
-              );
-            },
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: 'Usuarios',
           ),
-          const SizedBox(height: 20),
-
-          // Vacaciones
-          _AdminMenuItem(
-            icon: Icons.beach_access,
-            title: 'Vacaciones',
-            subtitle: 'Gestionar vacaciones del personal',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const StaffSelectorScreen(),
-                ),
-              );
-            },
+          BottomNavigationBarItem(
+            icon: Icon(Icons.manage_accounts),
+            label: 'Trabajadores',
           ),
-          const SizedBox(height: 20),
-
-          // Galeria
-          _AdminMenuItem(
-            icon: Icons.photo_library,
-            title: 'Galería',
-            subtitle: 'Gestionar imágenes de la galería',
-            onTap: () {
-
-              // PENDIENTE IMPLEMENTAR
-              
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Gestión de galería próximamente')),
-              );
-            },
+          BottomNavigationBarItem(
+            icon: Icon(Icons.beach_access),
+            label: 'Vacaciones',
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _AdminMenuItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  const _AdminMenuItem({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        leading: Icon(icon, size: 36, color: AppColors.gold),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
       ),
     );
   }

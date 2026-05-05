@@ -24,6 +24,14 @@
         { "fieldPath": "client_id", "order": "ASCENDING" },
         { "fieldPath": "start_time", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "appointments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "staff_id", "order": "ASCENDING" },
+        { "fieldPath": "start_time", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
