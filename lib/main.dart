@@ -32,28 +32,41 @@ class BarberApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthController()),
         ChangeNotifierProvider(create: (_) => ThemeController()),
       ],
-      child: MaterialApp(
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('es', 'ES'), // Español
-        ],
-        locale: const Locale('es', 'ES'), // Establecer español como idioma predeterminado
-        title: 'Barber App',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: const ColorScheme.dark(
-            primary: AppColors.gold,
-            surface: AppColors.darkBackground,
-          ),
-          scaffoldBackgroundColor: AppColors.darkBackground,
-        ),
-        // AuthWrapper decide automáticamente si mostrar Login o Home.
-        home: const AuthWrapper(),
+      child: Consumer<ThemeController>(
+        builder: (context, themeCtrl, child) {
+          return MaterialApp(
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('es', 'ES'), // Español
+            ],
+            locale: const Locale('es', 'ES'), // Establecer español como idioma predeterminado
+            title: 'Barber App',
+            debugShowCheckedModeBanner: false,
+            themeMode: themeCtrl.isDark ? ThemeMode.dark : ThemeMode.light,
+            theme: ThemeData(
+              useMaterial3: true,
+              colorScheme: const ColorScheme.light(
+                primary: AppColors.gold,
+                surface: AppColors.white,
+              ),
+              scaffoldBackgroundColor: AppColors.white,
+            ),
+            darkTheme: ThemeData(
+              useMaterial3: true,
+              colorScheme: const ColorScheme.dark(
+                primary: AppColors.gold,
+                surface: AppColors.darkBackground,
+              ),
+              scaffoldBackgroundColor: AppColors.darkBackground,
+            ),
+            // AuthWrapper decide automáticamente si mostrar Login o Home.
+            home: const AuthWrapper(),
+          );
+        },
       ),
     );
   }
