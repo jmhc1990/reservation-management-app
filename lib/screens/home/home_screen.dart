@@ -6,34 +6,34 @@ import '../../core/theme/app_colors.dart';
 import '../booking/booking_screen.dart';
 import '../services/services_list_screen.dart';
 import '../admin/admin_screen.dart';
-
+ 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
+ 
   static const Color gold = AppColors.gold;
-
+ 
   @override
   Widget build(BuildContext context) {
     final authController = Provider.of<AuthController>(context);
     final themeController = Provider.of<ThemeController>(context);
     final isDark = themeController.isDark;
-
+ 
     // Colores dinámicos según tema
     final bg          = isDark ? AppColors.darkBackground : AppColors.lightBackground;
     final surfaceBg   = isDark ? AppColors.darkSurface : Colors.grey.withValues(alpha: 0.08);
     final surfaceCard = isDark ? AppColors.darkCard : Colors.grey.withValues(alpha: 0.12);
     final textColor   = isDark ? Colors.white : AppColors.black;
     final subColor    = isDark ? Colors.white60 : Colors.black54;
-
+ 
     // LÓGICA TEMPORAL
     bool haReservadoAntes = false;
     String nombreBarbero = "David";
     int puntosFidelidad = 0;
     String userRole = 'cliente';
-
+ 
     // Redirección si es Admin
     if (userRole == 'admin') return const AdminScreen();
-
+ 
     return Scaffold(
       backgroundColor: bg,
       body: SafeArea(
@@ -52,7 +52,7 @@ class HomeScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 20),
-
+ 
                     // --- SI YA ES CLIENTE ---
                     if (haReservadoAntes) ...[
                       Text(
@@ -102,9 +102,9 @@ class HomeScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 30),
                     ],
-
+ 
                     const SizedBox(height: 10),
-
+ 
                     // Botón reservar cita (BookingScreen)
                     _buildButton(
                       'RESERVAR CITA',
@@ -116,9 +116,9 @@ class HomeScreen extends StatelessWidget {
                       ),
                       icon: Icons.calendar_month,
                     ),
-
+ 
                     const SizedBox(height: 12),
-
+ 
                     // Botón ver servicios
                     _buildButton(
                       haReservadoAntes ? 'RESERVAR OTRO SERVICIO' : 'VER SERVICIOS',
@@ -132,9 +132,9 @@ class HomeScreen extends StatelessWidget {
                       ),
                       isOutlined: true,
                     ),
-
+ 
                     const SizedBox(height: 30),
-
+ 
                     _GoldDivider(),
                     Center(
                       child: Text(
@@ -170,7 +170,7 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-
+ 
   Widget _buildButton(
     String text,
     Color bg,
@@ -206,20 +206,20 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-
-// ── Componentes ───────────────────────────────────────────────────────────────
-
+ 
+// Componentes
+ 
 class _Header extends StatelessWidget {
   final VoidCallback onLogout;
   final VoidCallback onToggleTheme;
   final bool isDark;
-
+ 
   const _Header({
     required this.onLogout,
     required this.onToggleTheme,
     required this.isDark,
   });
-
+ 
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -230,19 +230,6 @@ class _Header extends StatelessWidget {
       ),
       child: Row(
         children: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.arrow_back_ios_new,
-                color: HomeScreen.gold, size: 18),
-          ),
-          Text(
-            'Atrás',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: isDark ? Colors.white : AppColors.black,
-            ),
-          ),
           const Spacer(),
           // Botón de cambio de tema
           IconButton(
@@ -253,8 +240,31 @@ class _Header extends StatelessWidget {
               color: HomeScreen.gold,
             ),
           ),
+          // Botón de cerrar sesión con diálogo de confirmación
           IconButton(
-            onPressed: onLogout,
+            onPressed: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Cerrar sesión'),
+                  content: const Text('¿Seguro que quieres cerrar sesión?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: const Text('Cancelar'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text(
+                        'Cerrar sesión',
+                        style: TextStyle(color: Colors.redAccent),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+              if (confirmed == true) onLogout();
+            },
             tooltip: 'Cerrar sesión',
             icon: const Icon(Icons.logout, color: HomeScreen.gold),
           ),
@@ -263,12 +273,12 @@ class _Header extends StatelessWidget {
     );
   }
 }
-
+ 
 class _SectionTitle extends StatelessWidget {
   final String title;
   final Color textColor;
   const _SectionTitle({required this.title, required this.textColor});
-
+ 
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -289,7 +299,7 @@ class _SectionTitle extends StatelessWidget {
     );
   }
 }
-
+ 
 class _GoldDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -299,20 +309,20 @@ class _GoldDivider extends StatelessWidget {
     );
   }
 }
-
+ 
 class _ExpertCard extends StatelessWidget {
   final String nombre;
   final Color cardColor;
   final Color textColor;
   final Color subColor;
-
+ 
   const _ExpertCard({
     required this.nombre,
     required this.cardColor,
     required this.textColor,
     required this.subColor,
   });
-
+ 
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -355,12 +365,12 @@ class _ExpertCard extends StatelessWidget {
     );
   }
 }
-
+ 
 class _ServiceInfo extends StatelessWidget {
   final Color textColor;
   final Color subColor;
   const _ServiceInfo({required this.textColor, required this.subColor});
-
+ 
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -378,18 +388,18 @@ class _ServiceInfo extends StatelessWidget {
     );
   }
 }
-
+ 
 class _LoyaltyCard extends StatelessWidget {
   final int puntos;
   final Color surfaceBg;
   final Color surfaceCard;
-
+ 
   const _LoyaltyCard({
     required this.puntos,
     required this.surfaceBg,
     required this.surfaceCard,
   });
-
+ 
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -402,42 +412,40 @@ class _LoyaltyCard extends StatelessWidget {
           width: 1,
         ),
       ),
-      child: Center(
-        child: Wrap(
-          spacing: 16,
-          runSpacing: 16,
-          children: List.generate(6, (index) {
-            final filled = index < puntos;
-            return Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
+      // Row en lugar de Wrap para que los 6 círculos quepan en una sola fila
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: List.generate(6, (index) {
+          final filled = index < puntos;
+          return Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: filled
+                  ? HomeScreen.gold.withValues(alpha: 0.15)
+                  : surfaceBg,
+              border: Border.all(
                 color: filled
-                    ? HomeScreen.gold.withValues(alpha: 0.15)
-                    : surfaceBg,
-                border: Border.all(
-                  color: filled
-                      ? HomeScreen.gold
-                      : Colors.grey.withValues(alpha: 0.3),
-                  width: 1.5,
-                ),
+                    ? HomeScreen.gold
+                    : Colors.grey.withValues(alpha: 0.3),
+                width: 1.5,
               ),
-              child: filled
-                  ? const Icon(Icons.star, color: HomeScreen.gold, size: 26)
-                  : Center(
-                      child: Text(
-                        '${index + 1}',
-                        style: TextStyle(
-                          color: Colors.grey.withValues(alpha: 0.5),
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                        ),
+            ),
+            child: filled
+                ? const Icon(Icons.star, color: HomeScreen.gold, size: 22)
+                : Center(
+                    child: Text(
+                      '${index + 1}',
+                      style: TextStyle(
+                        color: Colors.grey.withValues(alpha: 0.5),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-            );
-          }),
-        ),
+                  ),
+          );
+        }),
       ),
     );
   }
