@@ -5,29 +5,72 @@ class AppointmentService {
   final _db = FirebaseFirestore.instance;
   final _collection = 'appointments';
 
-  // Crea una nueva cita
+  // Crea una nueva cita con validación de disponibilidad
   Future<void> createAppointment(ModeloCita cita) async {
     try {
+      // Validación de disponibilidad
+      final existing = await getAppointmentsByStaffAndDate(
+        staffId: cita.staffId,
+        date: cita.startTime,
+      );
+
+      final conflict = existing.any((a) =>
+        cita.startTime.isBefore(
+          a.startTime.add(Duration(minutes: a.duration))
+        ) &&
+        a.startTime.isBefore(
+          cita.startTime.add(Duration(minutes: cita.duration))
+        )
+      );
+
+      if (conflict) {
+        throw Exception('Este horario ya no está disponible. Por favor selecciona otro.');
+      }
+
       await _db.collection(_collection).add(cita.toMap());
     } on FirebaseException catch (e) {
       throw Exception('Error al crear la cita: ${e.message}');
     }
   }
 
-  // Consulta las citas de un trabajador en una fecha concreta
+  // Consulta las citas de un trabajador en una fecha concreta (sin canceladas)
   Future<List<ModeloCita>> getAppointmentsByStaffAndDate({
     required String staffId,
     required DateTime date,
   }) async {
     try {
-      // Rango del día completo
       final startOfDay = DateTime(date.year, date.month, date.day);
       final endOfDay = startOfDay.add(const Duration(days: 1));
 
       final snapshot = await _db
           .collection(_collection)
           .where('staff_id', isEqualTo: staffId)
-          .where('status', isEqualTo: EstadoCita.confirmed.name)
+          .where('start_time', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+          .where('start_time', isLessThan: Timestamp.fromDate(endOfDay))
+          .where('status', whereNotIn: ['cancelled'])
+          .orderBy('start_time')
+          .get();
+
+      return snapshot.docs.map((doc) {
+        return ModeloCita.fromMap({...doc.data(), 'id': doc.id});
+      }).toList();
+    } on FirebaseException catch (e) {
+      throw Exception('Error al obtener citas: ${e.message}');
+    }
+  }
+
+  // Para ver el historial del día — todas las citas
+  Future<List<ModeloCita>> getAllAppointmentsByStaffAndDate({
+    required String staffId,
+    required DateTime date,
+  }) async {
+    try {
+      final startOfDay = DateTime(date.year, date.month, date.day);
+      final endOfDay = startOfDay.add(const Duration(days: 1));
+
+      final snapshot = await _db
+          .collection(_collection)
+          .where('staff_id', isEqualTo: staffId)
           .where('start_time', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
           .where('start_time', isLessThan: Timestamp.fromDate(endOfDay))
           .orderBy('start_time')

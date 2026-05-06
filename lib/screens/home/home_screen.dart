@@ -1,35 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../controllers/auth_controller.dart';
+import '../../controllers/theme_controller.dart';
+import '../../core/theme/app_colors.dart';
+import '../booking/booking_screen.dart';
 import '../services/services_list_screen.dart';
 import '../admin/admin_screen.dart';
-
+ 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
-  static const Color gold = Color(0xFFD4AF37);
-  static const Color background = Color(0xFFFDFBF6);
-
+ 
+  static const Color gold = AppColors.gold;
+ 
   @override
   Widget build(BuildContext context) {
     final authController = Provider.of<AuthController>(context);
-
+    final themeController = Provider.of<ThemeController>(context);
+    final isDark = themeController.isDark;
+ 
+    // Colores dinámicos según tema
+    final bg          = isDark ? AppColors.darkBackground : AppColors.lightBackground;
+    final surfaceBg   = isDark ? AppColors.darkSurface : Colors.grey.withValues(alpha: 0.08);
+    final surfaceCard = isDark ? AppColors.darkCard : Colors.grey.withValues(alpha: 0.12);
+    final textColor   = isDark ? Colors.white : AppColors.black;
+    final subColor    = isDark ? Colors.white60 : Colors.black54;
+ 
     // LÓGICA TEMPORAL
     bool haReservadoAntes = false;
     String nombreBarbero = "David";
     int puntosFidelidad = 0;
     String userRole = 'cliente';
-
+ 
     // Redirección si es Admin
     if (userRole == 'admin') return const AdminScreen();
-
+ 
     return Scaffold(
-      backgroundColor: background,
+      backgroundColor: bg,
       body: SafeArea(
         child: Column(
           children: [
-            _Header(onLogout: () => authController.logout()),
-            const _SectionTitle(title: 'Inicio'),
+            _Header(
+              onLogout: () => authController.logout(),
+              onToggleTheme: () => themeController.toggle(),
+              isDark: isDark,
+            ),
+            _SectionTitle(title: 'Inicio', textColor: textColor),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -37,95 +52,115 @@ class HomeScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 20),
-
+ 
                     // --- SI YA ES CLIENTE ---
                     if (haReservadoAntes) ...[
-                      const Text(
+                      Text(
                         'Tus Servicios Favoritos',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w900,
-                          color: Colors.black,
+                          color: textColor,
                         ),
                       ),
                       const SizedBox(height: 10),
-                      _ExpertCard(nombre: nombreBarbero),
+                      _ExpertCard(
+                        nombre: nombreBarbero,
+                        cardColor: surfaceCard,
+                        textColor: textColor,
+                        subColor: subColor,
+                      ),
                       const SizedBox(height: 14),
-                      const _ServiceInfo(),
+                      _ServiceInfo(textColor: textColor, subColor: subColor),
                       const SizedBox(height: 16),
                       _buildButton(
                         'REPETIR ESTA EXPERIENCIA',
                         gold,
-                        Colors.white,
+                        Colors.black,
                         () {},
                         icon: Icons.repeat,
                       ),
                     ]
-                    // ---  SI ES NUEVO ---
+                    // --- SI ES NUEVO ---
                     else ...[
-                      const Center(
+                      Center(
                         child: Text(
                           '¡Bienvenido!',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w900,
-                            color: Colors.black,
+                            color: textColor,
                           ),
                         ),
                       ),
                       const SizedBox(height: 20),
-                      const Center(
+                      Center(
                         child: Text(
                           'Reserva tu primera cita ahora.',
-                          style: TextStyle(color: Colors.black),
+                          style: TextStyle(color: subColor),
                         ),
                       ),
                       const SizedBox(height: 30),
                     ],
-
+ 
                     const SizedBox(height: 10),
-
+ 
+                    // Botón reservar cita (BookingScreen)
                     _buildButton(
-                      haReservadoAntes
-                          ? 'RESERVAR OTRO SERVICIO'
-                          : 'RESERVAR MI PRIMERA CITA',
-                      Colors.transparent,
+                      'RESERVAR CITA',
+                      gold,
                       Colors.black,
                       () => Navigator.push(
                         context,
+                        MaterialPageRoute(builder: (_) => const BookingScreen()),
+                      ),
+                      icon: Icons.calendar_month,
+                    ),
+ 
+                    const SizedBox(height: 12),
+ 
+                    // Botón ver servicios
+                    _buildButton(
+                      haReservadoAntes ? 'RESERVAR OTRO SERVICIO' : 'VER SERVICIOS',
+                      Colors.transparent,
+                      gold,
+                      () => Navigator.push(
+                        context,
                         MaterialPageRoute(
-                          builder: (_) =>
-                              const ServicesListScreen(isAdmin: false),
+                          builder: (_) => const ServicesListScreen(isAdmin: false),
                         ),
                       ),
                       isOutlined: true,
                     ),
-
+ 
                     const SizedBox(height: 30),
-                    const Divider(color: gold, thickness: 1),
-                    const Center(
+ 
+                    _GoldDivider(),
+                    Center(
                       child: Text(
                         'Tarjeta de Fidelización',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w900,
-                          color: Colors.black,
+                          color: textColor,
                         ),
                       ),
                     ),
-                    const Divider(color: gold, thickness: 1),
+                    _GoldDivider(),
                     const SizedBox(height: 20),
-                    _LoyaltyCard(puntos: puntosFidelidad),
-                    const SizedBox(height: 20),
+                    _LoyaltyCard(
+                      puntos: puntosFidelidad,
+                      surfaceBg: surfaceBg,
+                      surfaceCard: surfaceCard,
+                    ),
+                    const SizedBox(height: 12),
                     Center(
                       child: Text(
                         '*Te faltan ${6 - puntosFidelidad} servicios para tu corte gratuito.',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: Colors.black,
-                        ),
+                        style: TextStyle(fontSize: 11, color: subColor),
                       ),
                     ),
+                    const SizedBox(height: 30),
                   ],
                 ),
               ),
@@ -135,8 +170,7 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-
-  // Widget para los botones
+ 
   Widget _buildButton(
     String text,
     Color bg,
@@ -147,15 +181,15 @@ class HomeScreen extends StatelessWidget {
   }) {
     return SizedBox(
       width: double.infinity,
-      height: 45,
+      height: 48,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: bg,
           foregroundColor: txt,
           elevation: 0,
-          side: isOutlined ? const BorderSide(color: gold, width: 2) : null,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900),
+          side: isOutlined ? const BorderSide(color: gold, width: 1.5) : null,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
         ),
         onPressed: onPress,
         child: icon != null
@@ -172,35 +206,66 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-
-// --- COMPONENTES DE DISEÑO ---
+ 
+// Componentes
+ 
 class _Header extends StatelessWidget {
   final VoidCallback onLogout;
-  const _Header({required this.onLogout});
+  final VoidCallback onToggleTheme;
+  final bool isDark;
+ 
+  const _Header({
+    required this.onLogout,
+    required this.onToggleTheme,
+    required this.isDark,
+  });
+ 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 58,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: HomeScreen.gold, width: 2)),
+        border: Border(bottom: BorderSide(color: HomeScreen.gold, width: 1.5)),
       ),
       child: Row(
         children: [
+          const Spacer(),
+          // Botón de cambio de tema
           IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.arrow_back_ios_new, color: HomeScreen.gold),
-          ),
-          const Text(
-            'Atrás',
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w900,
-              color: Colors.black,
+            onPressed: onToggleTheme,
+            tooltip: isDark ? 'Modo claro' : 'Modo oscuro',
+            icon: Icon(
+              isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+              color: HomeScreen.gold,
             ),
           ),
-          const Spacer(),
+          // Botón de cerrar sesión con diálogo de confirmación
           IconButton(
-            onPressed: onLogout,
+            onPressed: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Cerrar sesión'),
+                  content: const Text('¿Seguro que quieres cerrar sesión?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: const Text('Cancelar'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text(
+                        'Cerrar sesión',
+                        style: TextStyle(color: Colors.redAccent),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+              if (confirmed == true) onLogout();
+            },
+            tooltip: 'Cerrar sesión',
             icon: const Icon(Icons.logout, color: HomeScreen.gold),
           ),
         ],
@@ -208,70 +273,91 @@ class _Header extends StatelessWidget {
     );
   }
 }
-
+ 
 class _SectionTitle extends StatelessWidget {
   final String title;
-  const _SectionTitle({required this.title});
+  final Color textColor;
+  const _SectionTitle({required this.title, required this.textColor});
+ 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: HomeScreen.gold, width: 2)),
+        border: Border(bottom: BorderSide(color: HomeScreen.gold, width: 1.5)),
       ),
       child: Text(
         title,
-        style: const TextStyle(
-          fontSize: 25,
+        style: TextStyle(
+          fontSize: 24,
           fontWeight: FontWeight.w900,
-          color: Colors.black,
+          color: textColor,
+          letterSpacing: -0.5,
         ),
       ),
     );
   }
 }
-
+ 
+class _GoldDivider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 10),
+      child: Divider(color: HomeScreen.gold, thickness: 1),
+    );
+  }
+}
+ 
 class _ExpertCard extends StatelessWidget {
   final String nombre;
-  const _ExpertCard({required this.nombre});
+  final Color cardColor;
+  final Color textColor;
+  final Color subColor;
+ 
+  const _ExpertCard({
+    required this.nombre,
+    required this.cardColor,
+    required this.textColor,
+    required this.subColor,
+  });
+ 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 90,
       padding: const EdgeInsets.symmetric(horizontal: 18),
       decoration: BoxDecoration(
-        color: const Color(0xFFD9D9D9),
-        borderRadius: BorderRadius.circular(7),
+        color: cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: HomeScreen.gold.withValues(alpha: 0.25),
+          width: 1,
+        ),
       ),
       child: Row(
         children: [
-          const CircleAvatar(
+          CircleAvatar(
             radius: 34,
-            backgroundColor: HomeScreen.gold,
-            child: Icon(Icons.person, color: Colors.black, size: 34),
+            backgroundColor: HomeScreen.gold.withValues(alpha: 0.15),
+            child: const Icon(Icons.person, color: HomeScreen.gold, size: 34),
           ),
-          const SizedBox(width: 28),
+          const SizedBox(width: 20),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                nombre,
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.black,
-                ),
-              ),
-              const Text(
-                'Tu experto',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.black,
-                ),
-              ),
+              Text(nombre,
+                  style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w900,
+                      color: textColor)),
+              Text('Tu experto',
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: subColor)),
             ],
           ),
         ],
@@ -279,53 +365,85 @@ class _ExpertCard extends StatelessWidget {
     );
   }
 }
-
+ 
 class _ServiceInfo extends StatelessWidget {
-  const _ServiceInfo();
+  final Color textColor;
+  final Color subColor;
+  const _ServiceInfo({required this.textColor, required this.subColor});
+ 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '✂️ Corte Signature',
-          style: TextStyle(
-            fontSize: 19,
-            fontWeight: FontWeight.w900,
-            color: Colors.black,
-          ),
-        ),
-        Text(
-          'Asesoramiento, corte a tijera y lavado\npremium. 60 min.',
-          style: TextStyle(fontSize: 12, color: Colors.black),
-        ),
+        Text('✂️ Corte Signature',
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                color: textColor)),
+        const SizedBox(height: 4),
+        Text('Asesoramiento, corte a tijera y lavado\npremium. 60 min.',
+            style: TextStyle(fontSize: 13, color: subColor)),
       ],
     );
   }
 }
-
+ 
 class _LoyaltyCard extends StatelessWidget {
   final int puntos;
-  const _LoyaltyCard({required this.puntos});
+  final Color surfaceBg;
+  final Color surfaceCard;
+ 
+  const _LoyaltyCard({
+    required this.puntos,
+    required this.surfaceBg,
+    required this.surfaceCard,
+  });
+ 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Wrap(
-        spacing: 18,
-        runSpacing: 16,
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      decoration: BoxDecoration(
+        color: surfaceCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: HomeScreen.gold.withValues(alpha: 0.25),
+          width: 1,
+        ),
+      ),
+      // Row en lugar de Wrap para que los 6 círculos quepan en una sola fila
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: List.generate(6, (index) {
           final filled = index < puntos;
           return Container(
-            width: 42,
-            height: 42,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: filled ? Colors.black : HomeScreen.background,
-              border: Border.all(color: Colors.black, width: 1.5),
+              color: filled
+                  ? HomeScreen.gold.withValues(alpha: 0.15)
+                  : surfaceBg,
+              border: Border.all(
+                color: filled
+                    ? HomeScreen.gold
+                    : Colors.grey.withValues(alpha: 0.3),
+                width: 1.5,
+              ),
             ),
             child: filled
-                ? const Icon(Icons.star, color: HomeScreen.gold, size: 34)
-                : null,
+                ? const Icon(Icons.star, color: HomeScreen.gold, size: 22)
+                : Center(
+                    child: Text(
+                      '${index + 1}',
+                      style: TextStyle(
+                        color: Colors.grey.withValues(alpha: 0.5),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
           );
         }),
       ),
