@@ -8,22 +8,22 @@ import 'navigation/auth_wrapper.dart';
 import 'core/theme/app_colors.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
- 
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('es', null); // Inicializar formato de fechas en español
- 
+
   // Inicializar Firebase antes de arrancar la app.
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
- 
+
   runApp(const BarberApp());
 }
- 
+
 class BarberApp extends StatelessWidget {
   const BarberApp({super.key});
- 
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -33,7 +33,7 @@ class BarberApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeController()),
       ],
       child: Consumer<ThemeController>(
-        builder: (context, themeCtrl, child) {
+        builder: (context, themeController, _) {
           return MaterialApp(
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
@@ -41,12 +41,12 @@ class BarberApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: const [
-              Locale('es', 'ES'), // Español
+              Locale('es', 'ES'),
             ],
             locale: const Locale('es', 'ES'), // Establecer español como idioma predeterminado
             title: 'Barber App',
             debugShowCheckedModeBanner: false,
-            themeMode: themeCtrl.isDark ? ThemeMode.dark : ThemeMode.light,
+            themeMode: themeController.isDark ? ThemeMode.dark : ThemeMode.light,
             theme: ThemeData(
               useMaterial3: true,
               colorScheme: const ColorScheme.light(
