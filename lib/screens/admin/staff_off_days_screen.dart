@@ -280,6 +280,9 @@ class _StaffOffDaysScreenState extends State<StaffOffDaysScreen> {
               // Calendario
               TableCalendar(
                 locale: 'es_ES',
+                availableCalendarFormats: const {
+                  CalendarFormat.month: 'Mes', // solo deja la vista mensual
+                },
                 startingDayOfWeek: StartingDayOfWeek.monday,
                 firstDay: DateTime(DateTime.now().year - 1),
                 lastDay: DateTime(DateTime.now().year + 2),

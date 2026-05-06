@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models/user.dart';
-import '../../models/staff.dart';
 import '../../services/user_service.dart';
+import '../shared/user_profile_screen.dart';
+import '../../widgets/role_dialog.dart';
 
 class UsersListScreen extends StatefulWidget {
   const UsersListScreen({super.key});
@@ -77,147 +78,28 @@ class _UserCard extends StatelessWidget {
   // Texto del rol y especialización
   String _roleLabel(ModeloUsuario user) {
     if (user.role == RolUsuario.staff && user.specialization != null) {
-      return 'Staff · ${_specializationLabel(user.specialization!)}';
+      return 'Staff · ${RoleDialog.specializationLabel(user.specialization!)}';
     }
-    return _roleName(user.role);
+    return RoleDialog.roleName(user.role);
   }
   
-  String _roleName(RolUsuario role) {
-    switch (role) {
-      case RolUsuario.admin:
-        return 'Admin';
-      case RolUsuario.staff:
-        return 'Staff';
-      case RolUsuario.client:
-        return 'Cliente';
-    }
-  }
-
-  String _specializationLabel(Specialization specialization) {
-    switch (specialization) {
-      case Specialization.barber:
-        return 'Barbero';
-      case Specialization.stylist:
-        return 'Estilista';
-    }
-  }
-
-  Future<void> _showRoleDialog(BuildContext context) async {
-    RolUsuario selectedRole = user.role;
-    Specialization? selectedSpecialization = user.specialization;
-
-    await showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          return AlertDialog(
-            title: Text('Cambiar rol — ${user.name}'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Rol:'),
-                const SizedBox(height: 8),
-
-                // Selector de rol
-                DropdownButton<RolUsuario>(
-                  value: selectedRole,
-                  isExpanded: true,
-                  items: RolUsuario.values.map((role) {
-                    return DropdownMenuItem(
-                      value: role,
-                      child: Text(_roleName(role)),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setDialogState(() {
-                        selectedRole = value;
-                        // Limpia especialización si no es staff
-                        if (value != RolUsuario.staff) {
-                          selectedSpecialization = null;
-                        }
-                      });
-                    }
-                  },
-                ),
-
-                // Selector de especialización — solo si es staff
-                if (selectedRole == RolUsuario.staff) ...[
-                  const SizedBox(height: 16),
-                  const Text('Especialización:'),
-                  const SizedBox(height: 8),
-                  DropdownButton<Specialization>(
-                    value: selectedSpecialization,
-                    isExpanded: true,
-                    hint: const Text('Seleccionar especialización'),
-                    items: Specialization.values.map((specialization) {
-                      return DropdownMenuItem(
-                        value: specialization,
-                        child: Text(
-                          _specializationLabel(specialization),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setDialogState(() => selectedSpecialization = value);
-                    },
-                  ),
-                ],
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancelar'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  // Validar especialización si es staff
-                  if (selectedRole == RolUsuario.staff &&
-                      selectedSpecialization == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Selecciona una especialización para staff'),
-                      ),
-                    );
-                    return;
-                  }
-
-                  try {
-                    await userService.updateRole(
-                      uid: user.uid,
-                      newRole: selectedRole,
-                      specialization: selectedSpecialization,
-                    );
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Rol actualizado correctamente')),
-                      );
-                    }
-                  } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error al actualizar: $e')),
-                      );
-                    }
-                  }
-                },
-                child: const Text('Guardar'),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
+        onTap: () {
+          Navigator.push(
+            context, 
+            MaterialPageRoute(
+              builder: (_) => UserProfileScreen(
+                user: user, 
+                isAdmin: true,
+              ),
+            ),
+          );
+        },
         leading: Icon(_roleIcon(user.role), size: 36),
         title: Text(user.name),
         subtitle: Text(user.email),
@@ -230,7 +112,7 @@ class _UserCard extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             IconButton(
-              onPressed: () => _showRoleDialog(context),
+              onPressed: () => RoleDialog.show(context, user),
               icon: const Icon(Icons.edit_outlined),
               tooltip: 'Cambiar rol',
             ),
