@@ -129,8 +129,49 @@ class _StaffFormScreenState extends State<StaffFormScreen> {
     });
   }
 
+  // Valida que no haya solapamientos y que hora fin > hora inicio
+  static bool _tramosValidos(Map<String, List<dynamic>?> workingHours) {
+    for (final entry in workingHours.entries) {
+      final tramos = entry.value;
+      if (tramos == null || tramos.isEmpty) continue;
+
+      for (int i = 0; i < tramos.length; i++) {
+        final start = _toMinutes(tramos[i].startHour);
+        final end = _toMinutes(tramos[i].endHour);
+
+        // Hora fin debe ser mayor que hora inicio
+        if (end <= start) return false;
+
+        // Comprueba solapamiento con el resto de tramos
+        for (int j = i + 1; j < tramos.length; j++) {
+          final aStart = _toMinutes(tramos[i].startHour);
+          final aEnd = _toMinutes(tramos[i].endHour);
+          final bStart = _toMinutes(tramos[j].startHour);
+          final bEnd = _toMinutes(tramos[j].endHour);
+
+          if (aStart < bEnd && bStart < aEnd) return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  static int _toMinutes(String hour) {
+    final parts = hour.split(':');
+    return int.parse(parts[0]) * 60 + int.parse(parts[1]);
+  }
+
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
+
+    if(!_tramosValidos(_workingHours)){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Hay horas que se solapan o incorrectas.'),
+        ),
+      );
+      return;
+    }
 
     FocusScope.of(context).unfocus();
     setState(() => _isLoading = true);

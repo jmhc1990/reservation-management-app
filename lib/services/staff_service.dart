@@ -14,6 +14,14 @@ class StaffService {
     });
   }
 
+  // Stream para obtener un staff a partir de un ID en tiempo real
+  Stream<ModeloStaff?> streamStaffById(String id) {
+    return _db.collection(_collection).doc(id).snapshots().map((doc){
+      if (!doc.exists) return null;
+      return ModeloStaff.fromMap({...doc.data()!, 'id': doc.id});
+    });
+  }
+
   // Obtiene todos los staff
   Future<List<ModeloStaff>> getStaff() async {
     try{

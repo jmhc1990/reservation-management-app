@@ -28,7 +28,7 @@ class HomeScreen extends StatelessWidget {
     // LÓGICA TEMPORAL
     bool haReservadoAntes = false;
     String nombreBarbero = "David";
-    int puntosFidelidad = 0;
+    int puntosFidelidad = 4;
     String userRole = 'cliente';
  
     // Redirección si es Admin
@@ -156,7 +156,7 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     Center(
                       child: Text(
-                        '*Te faltan ${6 - puntosFidelidad} servicios para tu corte gratuito.',
+                        '*Te faltan ${10 - puntosFidelidad} servicios para tu corte gratuito.',
                         style: TextStyle(fontSize: 11, color: subColor),
                       ),
                     ),
@@ -400,7 +400,7 @@ class _LoyaltyCard extends StatelessWidget {
     required this.surfaceCard,
   });
  
-  @override
+ @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
@@ -412,14 +412,15 @@ class _LoyaltyCard extends StatelessWidget {
           width: 1,
         ),
       ),
-      // Row en lugar de Wrap para que los 6 círculos quepan en una sola fila
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: List.generate(6, (index) {
+      child: GridView.count(
+        crossAxisCount: 5,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        children: List.generate(10, (index) {
           final filled = index < puntos;
           return Container(
-            width: 38,
-            height: 38,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: filled

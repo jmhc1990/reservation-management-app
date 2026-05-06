@@ -70,9 +70,11 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Próximamente',
-                  style: TextStyle(color: AppColors.textSubtitle),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),  
                 ),
               ],
             ),
