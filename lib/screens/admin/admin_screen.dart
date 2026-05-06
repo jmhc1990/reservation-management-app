@@ -7,6 +7,7 @@ import 'users_list_screen.dart';
 import 'staff_list_screen.dart';
 import 'staff_selector_screen.dart';
 import 'appointments_screen.dart';
+import '../../controllers/theme_controller.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -55,6 +56,15 @@ class _AdminScreenState extends State<AdminScreen> {
       appBar: AppBar(
         title: const Text('Panel de administración'),
         actions: [
+          IconButton(
+            onPressed: () => context.read<ThemeController>().toggle(),
+            icon: Icon(
+              context.watch<ThemeController>().isDark
+                  ? Icons.light_mode_outlined
+                  : Icons.dark_mode_outlined,
+            ),
+            tooltip: 'Cambiar tema',
+          ),
           IconButton(
             onPressed: () => _handleLogout(context),
             icon: const Icon(Icons.logout),

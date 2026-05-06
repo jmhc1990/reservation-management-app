@@ -12,6 +12,9 @@ class ModeloUsuario {
   final RolUsuario role;
   final Specialization? specialization; // Solo para staff
   final DateTime createdAt;
+  final int loyaltyStamps;
+  final int stampsSinceLastReward;
+  final Map<String, dynamic>? pendingDiscount;
 
   ModeloUsuario({
     required this.uid,
@@ -21,6 +24,9 @@ class ModeloUsuario {
     this.role = RolUsuario.client, // Valor por defecto al crear un nuevo usuario
     this.specialization, // Solo para staff
     required this.createdAt,
+    this.loyaltyStamps = 0,
+    this.stampsSinceLastReward = 0,
+    this.pendingDiscount,
   });
 
   // Crear un ModeloUsuario a partir de un Map<String, dynamic> obtenido de Firestore
@@ -43,6 +49,9 @@ class ModeloUsuario {
       createdAt: map['createdAt'] != null
           ? (map['createdAt'] as Timestamp).toDate()
           : DateTime.now(), // Si no se encuentra la fecha, asignamos la fecha actual por defecto
+      loyaltyStamps: map['loyalty_stamps'] ?? 0,
+      stampsSinceLastReward: map['stamps_since_last_reward'] ?? 0,
+      pendingDiscount: map['pending_discount'] as Map<String, dynamic>?,
     );
   }
 
@@ -55,6 +64,9 @@ class ModeloUsuario {
       'role': role.name, // Guardamos el nombre del enum para facilitar la lectura en Firestore
       'specialization': specialization?.name, // Solo para staff
       'createdAt': Timestamp.fromDate(createdAt),
+      'loyalty_stamps': loyaltyStamps,
+      'stamps_since_last_reward': stampsSinceLastReward,
+      'pending_discount': pendingDiscount,
     };
   }
 
@@ -67,6 +79,9 @@ class ModeloUsuario {
     RolUsuario? role,
     Specialization? specialization, // Solo para staff
     DateTime? createdAt,
+    int? loyaltyStamps,
+    int? stampsSinceLastReward,
+    Map<String, dynamic>? pendingDiscount,
   }) {
     return ModeloUsuario(
       uid: uid ?? this.uid,
@@ -76,6 +91,9 @@ class ModeloUsuario {
       role: role ?? this.role,
       specialization: specialization ?? this.specialization, // Solo para staff
       createdAt: createdAt ?? this.createdAt,
+      loyaltyStamps: loyaltyStamps ?? this.loyaltyStamps,
+      stampsSinceLastReward: stampsSinceLastReward ?? this.stampsSinceLastReward,
+      pendingDiscount: pendingDiscount ?? this.pendingDiscount,
     );
   }
 }

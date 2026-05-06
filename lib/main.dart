@@ -47,6 +47,14 @@ class BarberApp extends StatelessWidget {
             title: 'Barber App',
             debugShowCheckedModeBanner: false,
             themeMode: themeController.isDark ? ThemeMode.dark : ThemeMode.light,
+            theme: ThemeData(
+              useMaterial3: true,
+              colorScheme: const ColorScheme.light(
+                primary: AppColors.gold,
+                surface: AppColors.white,
+              ),
+              scaffoldBackgroundColor: AppColors.white,
+            ),
             darkTheme: ThemeData(
               useMaterial3: true,
               colorScheme: const ColorScheme.dark(
@@ -54,14 +62,6 @@ class BarberApp extends StatelessWidget {
                 surface: AppColors.darkBackground,
               ),
               scaffoldBackgroundColor: AppColors.darkBackground,
-            ),
-            theme: ThemeData(
-              useMaterial3: true,
-              colorScheme: ColorScheme.light(
-                primary: AppColors.gold,
-                surface: AppColors.white,
-              ),
-              scaffoldBackgroundColor: AppColors.white,
             ),
             // AuthWrapper decide automáticamente si mostrar Login o Home.
             home: const AuthWrapper(),
