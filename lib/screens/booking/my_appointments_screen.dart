@@ -141,41 +141,23 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final citas = snapshot.data ?? [];
-        if (citas.isEmpty) {
+        // Solo mostramos las citas confirmadas que aún no han ocurrido,
+        // ordenadas de la más cercana a la más lejana.
+        final now = DateTime.now();
+        final upcoming = (snapshot.data ?? [])
+            .where((c) =>
+                c.status == EstadoCita.confirmed && c.startTime.isAfter(now))
+            .toList()
+          ..sort((a, b) => a.startTime.compareTo(b.startTime));
+
+        if (upcoming.isEmpty) {
           return _buildEmptyState();
         }
 
-        // próximas = confirmadas y aún no ocurridas (cancelables).
-        // historial = todo lo demás (canceladas, completadas, pasadas...).
-        final upcoming = <ModeloCita>[];
-        final past = <ModeloCita>[];
-        final now = DateTime.now();
-        for (final c in citas) {
-          final isFuture = c.startTime.isAfter(now);
-          if (isFuture && c.status == EstadoCita.confirmed) {
-            upcoming.add(c);
-          } else {
-            past.add(c);
-          }
-        }
-        upcoming.sort((a, b) => a.startTime.compareTo(b.startTime));
-
-        return ListView(
+        return ListView.builder(
           padding: const EdgeInsets.all(16),
-          children: [
-            if (upcoming.isNotEmpty) ...[
-              _buildSectionHeader('Próximas (${upcoming.length})'),
-              const SizedBox(height: 8),
-              ...upcoming.map((c) => _buildAppointmentCard(c, cancellable: true)),
-              const SizedBox(height: 16),
-            ],
-            if (past.isNotEmpty) ...[
-              _buildSectionHeader('Historial (${past.length})'),
-              const SizedBox(height: 8),
-              ...past.map((c) => _buildAppointmentCard(c, cancellable: false)),
-            ],
-          ],
+          itemCount: upcoming.length,
+          itemBuilder: (context, index) => _buildAppointmentCard(upcoming[index]),
         );
       },
     );
@@ -212,18 +194,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-        color: AppColors.gold,
-      ),
-    );
-  }
-
-  Widget _buildAppointmentCard(ModeloCita cita, {required bool cancellable}) {
+  Widget _buildAppointmentCard(ModeloCita cita) {
     // staff/service pueden ser null si fueron eliminados después de reservar.
     final staff = _staffById[cita.staffId];
     final service = _serviceById[cita.serviceId];
@@ -235,9 +206,9 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: AppColors.gold.withValues(alpha: 0.3),
-          width: 1,
+        side: const BorderSide(
+          color: AppColors.gold,
+          width: 1.5,
         ),
       ),
       child: Padding(
@@ -269,31 +240,29 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               '$timeLabel · ${cita.duration} min'
               '${service != null ? ' · ${service.price}€' : ''}',
             ),
-            if (cancellable) ...[
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: isCancelling ? null : () => _handleCancel(cita),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.cancel,
-                    side: const BorderSide(color: AppColors.cancel),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                  ),
-                  icon: isCancelling
-                      ? const SizedBox(
-                          height: 16,
-                          width: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppColors.cancel,
-                          ),
-                        )
-                      : const Icon(Icons.cancel_outlined, size: 18),
-                  label: Text(isCancelling ? 'Cancelando...' : 'Cancelar reserva'),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: isCancelling ? null : () => _handleCancel(cita),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.cancel,
+                  side: const BorderSide(color: AppColors.cancel),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                 ),
+                icon: isCancelling
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.cancel,
+                        ),
+                      )
+                    : const Icon(Icons.cancel_outlined, size: 18),
+                label: Text(isCancelling ? 'Cancelando...' : 'Cancelar reserva'),
               ),
-            ],
+            ),
           ],
         ),
       ),
