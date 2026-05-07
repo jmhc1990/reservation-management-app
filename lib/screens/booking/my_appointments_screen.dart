@@ -208,7 +208,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
         borderRadius: BorderRadius.circular(12),
         side: const BorderSide(
           color: AppColors.gold,
-          width: 1.5,
+          width: 1,
         ),
       ),
       child: Padding(
