@@ -30,9 +30,10 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "staff_id", "order": "ASCENDING" },
-        { "fieldPath": "start_time", "order": "DESCENDING" }
+        { "fieldPath": "start_time", "order": "ASCENDING" }
       ]
     }
+
   ],
   "fieldOverrides": []
 }

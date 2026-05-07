@@ -133,11 +133,11 @@ class _StaffProfileScreenState extends State<StaffProfileScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Especialidades',
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSubtitle,
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -167,11 +167,11 @@ class _StaffProfileScreenState extends State<StaffProfileScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Servicios que ofrece',
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSubtitle,
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -201,11 +201,11 @@ class _StaffProfileScreenState extends State<StaffProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Horario semanal',
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSubtitle,
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -217,9 +217,9 @@ class _StaffProfileScreenState extends State<StaffProfileScreen> {
                         if (tramos == null || tramos.isEmpty) {
                           return Text(
                             '$nombre: Libre',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
-                              color: AppColors.textSubtitle,
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           );
                         }
@@ -304,9 +304,9 @@ class _InfoTile extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
-                  color: AppColors.textSubtitle,
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
               Text(

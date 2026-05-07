@@ -36,4 +36,13 @@ class StaffOffDayService {
       throw Exception('Error al eliminar ausencia: ${e.message}');
     }
   }
+
+  // Edita una ausencia existente
+  Future<void> updateOffDay(ModeloStaffOffDay offDay) async {
+    try {
+      await _db.collection(_collection).doc(offDay.id).update(offDay.toMap());
+    } on FirebaseException catch (e) {
+      throw Exception('Error al actualizar ausencia: ${e.message}');
+    }
+  }
 }

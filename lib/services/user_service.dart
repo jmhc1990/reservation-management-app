@@ -27,6 +27,14 @@ class UserService {
     });
   }
 
+  // Stream de un usuario concreto por su uid (null si no existe)
+  Stream<ModeloUsuario?> streamUserById(String uid) {
+    return _db.collection(_collection).doc(uid).snapshots().map((doc) {
+      if (!doc.exists) return null;
+      return ModeloUsuario.fromMap({...doc.data()!, 'uid': doc.id});
+    });
+  }
+
   // Actualiza el rol y especialización de un usuario
   Future<void> updateRole({
     required String uid,
@@ -43,6 +51,25 @@ class UserService {
       });
     } on FirebaseException catch (e) {
       throw Exception('Error al actualizar el rol: ${e.message}');
+    }
+  }
+
+  // Actualiza la información básica de un usuario
+  Future<void> updateUser({
+    required String uid,
+    String? name,
+    String? email,
+    String? phone,
+  }) async {
+    try {
+      final Map<String, dynamic> data = {};
+      if (name != null) data['name'] = name;
+      if (email != null) data['email'] = email;
+      if (phone != null) data['phone'] = phone;
+
+      await _db.collection(_collection).doc(uid).update(data);
+    } on FirebaseException catch (e) {
+      throw Exception('Error al actualizar usuario: ${e.message}');
     }
   }
 }
