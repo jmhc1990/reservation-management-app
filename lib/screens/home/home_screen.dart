@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/theme_controller.dart';
 import '../../core/theme/app_colors.dart';
+import '../../models/user.dart';
+import '../../services/user_service.dart';
 import '../booking/booking_screen.dart';
 import '../booking/my_appointments_screen.dart';
 import '../services/services_list_screen.dart';
@@ -84,28 +86,25 @@ class HomeScreen extends StatelessWidget {
                     ]
                     // --- SI ES NUEVO ---
                     else ...[
-                      Center(
-                        child: Text(
-                          '¡Bienvenido!',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            color: textColor,
-                          ),
-                        ),
+                      _WelcomeGreeting(
+                        uid: authController.currentUser?.uid,
+                        textColor: textColor,
                       ),
                       const SizedBox(height: 20),
                       Center(
                         child: Text(
-                          'Reserva tu primera cita ahora.',
+                          'Reserva tu cita ahora mismo.',
                           style: TextStyle(color: subColor),
                         ),
                       ),
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 16),
                     ],
- 
+
+                    // sección de próximas citas (vacía si el cliente no tiene)
+                    MyAppointmentsSection(textColor: textColor),
+
                     const SizedBox(height: 10),
- 
+
                     // Botón reservar cita (BookingScreen)
                     _buildButton(
                       'RESERVAR CITA',
@@ -120,21 +119,6 @@ class HomeScreen extends StatelessWidget {
 
                     const SizedBox(height: 12),
 
-                    // botón mis reservas
-                    _buildButton(
-                      'MIS RESERVAS',
-                      Colors.transparent,
-                      gold,
-                      () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const MyAppointmentsScreen()),
-                      ),
-                      icon: Icons.event_note,
-                      isOutlined: true,
-                    ),
- 
-                    const SizedBox(height: 12),
- 
                     // botón ver servicios
                     _buildButton(
                       haReservadoAntes ? 'RESERVAR OTRO SERVICIO' : 'VER SERVICIOS',
@@ -224,7 +208,40 @@ class HomeScreen extends StatelessWidget {
 }
  
 // Componentes
- 
+
+// Saludo "Bienvenido, [nombre]" — escucha el doc del usuario en Firestore
+// y muestra el primer nombre. Mientras carga o si falla, muestra "¡Bienvenido!".
+class _WelcomeGreeting extends StatelessWidget {
+  final String? uid;
+  final Color textColor;
+
+  const _WelcomeGreeting({required this.uid, required this.textColor});
+
+  @override
+  Widget build(BuildContext context) {
+    final style = TextStyle(
+      fontSize: 22,
+      fontWeight: FontWeight.w900,
+      color: textColor,
+    );
+
+    if (uid == null) {
+      return Center(child: Text('¡Bienvenido!', style: style));
+    }
+
+    return StreamBuilder<ModeloUsuario?>(
+      stream: UserService().streamUserById(uid!),
+      builder: (context, snapshot) {
+        final firstName = snapshot.data?.name.split(' ').first;
+        final text = (firstName != null && firstName.isNotEmpty)
+            ? 'Bienvenido, $firstName'
+            : '¡Bienvenido!';
+        return Center(child: Text(text, style: style));
+      },
+    );
+  }
+}
+
 class _Header extends StatelessWidget {
   final VoidCallback onLogout;
   final VoidCallback onToggleTheme;
@@ -294,23 +311,44 @@ class _SectionTitle extends StatelessWidget {
   final String title;
   final Color textColor;
   const _SectionTitle({required this.title, required this.textColor});
- 
+
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
       decoration: const BoxDecoration(
         border: Border(bottom: BorderSide(color: HomeScreen.gold, width: 1.5)),
       ),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.w900,
-          color: textColor,
-          letterSpacing: -0.5,
-        ),
+      child: Row(
+        children: [
+          // Barra de acento dorada
+          Container(
+            width: 4,
+            height: 26,
+            decoration: BoxDecoration(
+              color: HomeScreen.gold,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              color: textColor,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const Spacer(),
+          // Diamante decorativo en el lateral derecho
+          Icon(
+            Icons.diamond_outlined,
+            color: HomeScreen.gold.withValues(alpha: 0.85),
+            size: 20,
+          ),
+        ],
       ),
     );
   }
