@@ -12,11 +12,13 @@ import '../../services/user_service.dart';
 class BookingScreen extends StatefulWidget {
   final bool isAdmin;
   final String? preselectedClientId;
+  final DateTime? preselectedDate;
 
   const BookingScreen({
     super.key,
     this.isAdmin = false,
     this.preselectedClientId,
+    this.preselectedDate,
   });
 
   @override
@@ -28,6 +30,7 @@ class _BookingScreenState extends State<BookingScreen> {
   final _catalogService = CatalogService();
   final _appointmentService = AppointmentService();
   final _userService = UserService();
+  final _now = DateTime.now();
 
   int _currentStep = 0;
 
@@ -54,6 +57,9 @@ class _BookingScreenState extends State<BookingScreen> {
     super.initState();
     _loadStaff();
     if (widget.isAdmin) _loadUsers();
+    if (widget.preselectedDate != null) {
+      _selectedDate = widget.preselectedDate;
+    }
   }
 
   // carga de datos
@@ -148,7 +154,7 @@ class _BookingScreenState extends State<BookingScreen> {
           current.isBefore(a.startTime.add(Duration(minutes: a.duration))) &&
           a.startTime.isBefore(slotEnd),
         );
-        if (!conflict) slots.add(current);
+        if (!conflict && !current.isBefore(_now)) slots.add(current);
         current = current.add(Duration(minutes: duration));
       }
     }
@@ -164,7 +170,11 @@ class _BookingScreenState extends State<BookingScreen> {
       _errorMessage = null;
     });
     final staffStep = widget.isAdmin ? 2 : 1;
+    final scheduleStep = widget.isAdmin ? 3 : 2;
     if (_currentStep == staffStep) _loadServices();
+    if (_currentStep == scheduleStep && _selectedDate != null) {
+      _loadAvailableSlots();
+    }
   }
 
   void _prevStep() {
@@ -427,7 +437,7 @@ class _BookingScreenState extends State<BookingScreen> {
             onTap: () => setState(() {
               _selectedStaff = staff;
               _selectedService = null;
-              _selectedDate = null;
+              _selectedDate = widget.preselectedDate; // si venimos con fecha preseleccionada, la mantenemos al cambiar de barbero
               _selectedSlot = null;
               _availableSlots = [];
             }),
@@ -481,6 +491,14 @@ class _BookingScreenState extends State<BookingScreen> {
   // paso 3: seleccionar fecha y slot
 
   Widget _buildScheduleStep() {
+    final firstAvailable = _now.hour >= 23
+        ? DateTime(_now.year, _now.month, _now.day + 1)
+        : DateTime(_now.year, _now.month, _now.day);
+
+    final initialDate = (_selectedDate != null && !_selectedDate!.isBefore(firstAvailable))
+        ? _selectedDate!
+        : firstAvailable.add(const Duration(days: 1));
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -490,8 +508,8 @@ class _BookingScreenState extends State<BookingScreen> {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: 12),
           CalendarDatePicker(
-            initialDate: DateTime.now().add(const Duration(days: 1)),
-            firstDate: DateTime.now(),
+            initialDate: initialDate,
+            firstDate: firstAvailable,
             lastDate: DateTime.now().add(const Duration(days: 30)),
             onDateChanged: (date) {
               setState(() {

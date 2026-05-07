@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:style_sync/screens/booking/my_appointments_screen.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/appointments.dart';
@@ -191,7 +190,12 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                   onPressed: () async {
                     await Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const BookingScreen(isAdmin: true),),
+                      MaterialPageRoute(
+                        builder: (_) => BookingScreen(
+                          isAdmin: true,
+                          preselectedDate: _selectedDay,
+                        ),
+                      ),
                     );
                     _loadCitasDelDia(); // recargar al volver
                   },
