@@ -9,9 +9,7 @@ import '../../services/appointment_service.dart';
 import '../../services/catalog_service.dart';
 import '../../services/staff_service.dart';
 
-// Sección embebida en HomeScreen que lista las próximas citas como tarjetas
-// compactas. Al pulsar una, se abre un diálogo con todos los detalles desde
-// donde se puede cancelar.
+// Sección embebida en HomeScreen que lista las próximas citas como tarjetas compactas
 class MyAppointmentsSection extends StatefulWidget {
   final Color textColor;
   const MyAppointmentsSection({super.key, required this.textColor});
@@ -117,9 +115,7 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
     showDialog(
       context: context,
       builder: (dialogCtx) {
-        // Estado local del diálogo para mostrar el spinner durante la
-        // cancelación (el StatefulBuilder evita tener que ensuciar el state
-        // del widget padre con un _cancellingId).
+        // Estado local del diálogo para mostrar el spinner durante la cancelación
         bool cancelling = false;
         return StatefulBuilder(
           builder: (ctx, setDialogState) => Dialog(
@@ -259,7 +255,7 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
 
   Widget _buildAppointmentCard(ModeloCita cita) {
     final service = _serviceById[cita.serviceId];
-    // Formato corto en español: "jue 7 may · 16:30"
+    // formato corto en español: "jue 7 may · 16:30"
     final shortLabel =
         DateFormat("EEE d MMM · HH:mm", 'es_ES').format(cita.startTime);
 
@@ -345,8 +341,6 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
     );
   }
 
-  // DateFormat en español devuelve el día de la semana en minúscula
-  // ("jueves"), así que ponemos en mayúscula la primera letra.
   String _capitalize(String text) {
     if (text.isEmpty) return text;
     return text[0].toUpperCase() + text.substring(1);

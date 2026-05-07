@@ -210,7 +210,7 @@ class HomeScreen extends StatelessWidget {
 // Componentes
 
 // Saludo "Bienvenido, [nombre]" — escucha el doc del usuario en Firestore
-// y muestra el primer nombre. Mientras carga o si falla, muestra "¡Bienvenido!".
+// si carga o falla, muestra solo "¡Bienvenido!".
 class _WelcomeGreeting extends StatelessWidget {
   final String? uid;
   final Color textColor;
