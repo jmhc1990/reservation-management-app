@@ -4,6 +4,7 @@ import '../../controllers/auth_controller.dart';
 import '../../controllers/theme_controller.dart';
 import '../../core/theme/app_colors.dart';
 import '../booking/booking_screen.dart';
+import '../booking/my_appointments_screen.dart';
 import '../services/services_list_screen.dart';
 import '../admin/admin_screen.dart';
  
@@ -116,10 +117,25 @@ class HomeScreen extends StatelessWidget {
                       ),
                       icon: Icons.calendar_month,
                     ),
+
+                    const SizedBox(height: 12),
+
+                    // botón mis reservas
+                    _buildButton(
+                      'MIS RESERVAS',
+                      Colors.transparent,
+                      gold,
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const MyAppointmentsScreen()),
+                      ),
+                      icon: Icons.event_note,
+                      isOutlined: true,
+                    ),
  
                     const SizedBox(height: 12),
  
-                    // Botón ver servicios
+                    // botón ver servicios
                     _buildButton(
                       haReservadoAntes ? 'RESERVAR OTRO SERVICIO' : 'VER SERVICIOS',
                       Colors.transparent,

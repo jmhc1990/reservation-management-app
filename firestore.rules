@@ -72,12 +72,16 @@ service cloud.firestore {
 
       // Actualizar:
       // - staff solo puede cambiar el campo 'status'
-      // - cliente no puede modificar nada
+      // - cliente solo puede cancelar SU propia cita (status -> 'cancelled')
       // - admin puede modificar todo
       allow update: if isAdmin()
                       || (isStaff()
                       && resource.data.staff_id == request.auth.uid
-                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+                      || (isClient()
+                      && resource.data.client_id == request.auth.uid
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+                      && request.resource.data.status == 'cancelled');
 
       // Eliminar: solo admin
       allow delete: if isAdmin();
