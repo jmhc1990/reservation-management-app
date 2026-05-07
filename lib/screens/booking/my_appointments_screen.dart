@@ -9,15 +9,16 @@ import '../../services/appointment_service.dart';
 import '../../services/catalog_service.dart';
 import '../../services/staff_service.dart';
 
-// pantalla "Mis reservas": lista las citas del cliente y permite cancelarlas.
-class MyAppointmentsScreen extends StatefulWidget {
-  const MyAppointmentsScreen({super.key});
+// Sección embebida en HomeScreen que lista las próximas citas como tarjetas compactas
+class MyAppointmentsSection extends StatefulWidget {
+  final Color textColor;
+  const MyAppointmentsSection({super.key, required this.textColor});
 
   @override
-  State<MyAppointmentsScreen> createState() => _MyAppointmentsScreenState();
+  State<MyAppointmentsSection> createState() => _MyAppointmentsSectionState();
 }
 
-class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
+class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
   final _appointmentService = AppointmentService();
   final _staffService = StaffService();
   final _catalogService = CatalogService();
@@ -28,8 +29,6 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
   Map<String, ModeloServicio> _serviceById = {};
 
   bool _isLoadingCatalog = true;
-  String? _catalogError;
-  String? _cancellingId; // id de la cita que se está cancelando ahora mismo
 
   @override
   void initState() {
@@ -37,7 +36,6 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
     _loadCatalog();
   }
 
-  // carga staff y servicios una sola vez al entrar en la pantalla.
   Future<void> _loadCatalog() async {
     try {
       final results = await Future.wait([
@@ -52,18 +50,14 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
         _serviceById = {for (final s in services) s.id: s};
         _isLoadingCatalog = false;
       });
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
-      setState(() {
-        _catalogError = e.toString().replaceAll('Exception: ', '');
-        _isLoadingCatalog = false;
-      });
+      setState(() => _isLoadingCatalog = false);
     }
   }
 
-  // pide confirmación y, si acepta, cambia el estado de la cita a "cancelled".
-  Future<void> _handleCancel(ModeloCita cita) async {
-    final confirmed = await showDialog<bool>(
+  Future<bool> _confirmCancel() async {
+    final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Cancelar cita'),
@@ -85,64 +79,149 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
         ],
       ),
     );
+    return result == true;
+  }
 
-    if (confirmed != true) return;
-
-    setState(() => _cancellingId = cita.id);
+  Future<bool> _doCancel(ModeloCita cita) async {
     try {
       await _appointmentService.updateStatus(
         appointmentId: cita.id,
         newStatus: EstadoCita.cancelled,
       );
-      if (!mounted) return;
+      if (!mounted) return false;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Cita cancelada correctamente')),
       );
+      return true;
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted) return false;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.toString().replaceAll('Exception: ', '')),
           backgroundColor: AppColors.cancel,
         ),
       );
-    } finally {
-      if (mounted) setState(() => _cancellingId = null);
+      return false;
     }
+  }
+
+  void _showDetailDialog(ModeloCita cita) {
+    final staff = _staffById[cita.staffId];
+    final service = _serviceById[cita.serviceId];
+    final dateLabel =
+        DateFormat("EEEE d 'de' MMMM 'de' y", 'es_ES').format(cita.startTime);
+    final timeLabel = DateFormat('HH:mm').format(cita.startTime);
+
+    showDialog(
+      context: context,
+      builder: (dialogCtx) {
+        // Estado local del diálogo para mostrar el spinner durante la cancelación
+        bool cancelling = false;
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: AppColors.gold, width: 1),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          service?.name ?? 'Servicio no disponible',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildStatusBadge(cita.status),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _infoRow(Icons.person, staff?.name ?? 'Barbero no disponible'),
+                  const SizedBox(height: 8),
+                  _infoRow(Icons.calendar_today, _capitalize(dateLabel)),
+                  const SizedBox(height: 8),
+                  _infoRow(
+                    Icons.access_time,
+                    '$timeLabel · ${cita.duration} min'
+                    '${service != null ? ' · ${service.price}€' : ''}',
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: cancelling
+                              ? null
+                              : () => Navigator.pop(dialogCtx),
+                          child: const Text('Cerrar'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: cancelling
+                              ? null
+                              : () async {
+                                  if (!await _confirmCancel()) return;
+                                  setDialogState(() => cancelling = true);
+                                  final ok = await _doCancel(cita);
+                                  if (!mounted || !dialogCtx.mounted) return;
+                                  if (ok) {
+                                    Navigator.pop(dialogCtx);
+                                  } else {
+                                    setDialogState(() => cancelling = false);
+                                  }
+                                },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.cancel,
+                            side: const BorderSide(color: AppColors.cancel),
+                          ),
+                          icon: cancelling
+                              ? const SizedBox(
+                                  height: 14,
+                                  width: 14,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.cancel,
+                                  ),
+                                )
+                              : const Icon(Icons.cancel_outlined, size: 16),
+                          label: Text(cancelling ? 'Cancelando...' : 'Cancelar'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    if (user == null || _isLoadingCatalog) return const SizedBox.shrink();
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Mis reservas')),
-      // encadena los estados: sin sesión → cargando → error → lista
-      body: user == null
-          ? const Center(child: Text('Debes iniciar sesión para ver tus reservas'))
-          : _isLoadingCatalog
-              ? const Center(child: CircularProgressIndicator())
-              : _catalogError != null
-                  ? Center(child: Text('Error: $_catalogError'))
-                  : _buildAppointmentsList(user.uid),
-    );
-  }
-
-  Widget _buildAppointmentsList(String clientId) {
     return StreamBuilder<List<ModeloCita>>(
-      stream: _appointmentService.streamClientAppointments(clientId),
+      stream: _appointmentService.streamClientAppointments(user.uid),
       builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Center(
-            child: Text('Error cargando reservas: ${snapshot.error}'),
-          );
-        }
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+        if (snapshot.connectionState == ConnectionState.waiting ||
+            snapshot.hasError) {
+          return const SizedBox.shrink();
         }
 
-        // Solo mostramos las citas confirmadas que aún no han ocurrido,
-        // ordenadas de la más cercana a la más lejana.
         final now = DateTime.now();
         final upcoming = (snapshot.data ?? [])
             .where((c) =>
@@ -150,120 +229,76 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
             .toList()
           ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
-        if (upcoming.isEmpty) {
-          return _buildEmptyState();
-        }
+        if (upcoming.isEmpty) return const SizedBox.shrink();
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: upcoming.length,
-          itemBuilder: (context, index) => _buildAppointmentCard(upcoming[index]),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8, left: 2),
+              child: Text(
+                'Tus próximas citas',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: widget.textColor.withValues(alpha: 0.7),
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ),
+            ...upcoming.map(_buildAppointmentCard),
+          ],
         );
       },
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.event_busy, size: 64, color: AppColors.gold),
-            const SizedBox(height: 16),
-            const Text(
-              'No tienes reservas',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.gold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Cuando reserves una cita, aparecerá aquí.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildAppointmentCard(ModeloCita cita) {
-    // staff/service pueden ser null si fueron eliminados después de reservar.
-    final staff = _staffById[cita.staffId];
     final service = _serviceById[cita.serviceId];
-    final dateLabel = DateFormat("EEEE d 'de' MMMM 'de' y", 'es_ES').format(cita.startTime);
-    final timeLabel = DateFormat('HH:mm').format(cita.startTime);
-    final isCancelling = _cancellingId == cita.id;
+    // formato corto en español: "jue 7 may · 16:30"
+    final shortLabel =
+        DateFormat("EEE d MMM · HH:mm", 'es_ES').format(cita.startTime);
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 8),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(
-          color: AppColors.gold,
-          width: 1,
-        ),
+        borderRadius: BorderRadius.circular(10),
+        side: const BorderSide(color: AppColors.gold, width: 1),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    service?.name ?? 'Servicio no disponible',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+      child: InkWell(
+        onTap: () => _showDetailDialog(cita),
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      service?.name ?? 'Servicio',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _capitalize(shortLabel),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: widget.textColor.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
                 ),
-                _buildStatusBadge(cita.status),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _infoRow(Icons.person, staff?.name ?? 'Barbero no disponible'),
-            const SizedBox(height: 6),
-            _infoRow(Icons.calendar_today, _capitalize(dateLabel)),
-            const SizedBox(height: 6),
-            _infoRow(
-              Icons.access_time,
-              '$timeLabel · ${cita.duration} min'
-              '${service != null ? ' · ${service.price}€' : ''}',
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: isCancelling ? null : () => _handleCancel(cita),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.cancel,
-                  side: const BorderSide(color: AppColors.cancel),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                ),
-                icon: isCancelling
-                    ? const SizedBox(
-                        height: 16,
-                        width: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.cancel,
-                        ),
-                      )
-                    : const Icon(Icons.cancel_outlined, size: 18),
-                label: Text(isCancelling ? 'Cancelando...' : 'Cancelar reserva'),
               ),
-            ),
-          ],
+              const Icon(Icons.chevron_right, color: AppColors.gold, size: 20),
+            ],
+          ),
         ),
       ),
     );
