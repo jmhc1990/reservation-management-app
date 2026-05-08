@@ -405,9 +405,9 @@ class _StaffFormScreenState extends State<StaffFormScreen> {
                                       isDense: true,
                                     ),
                                     onChanged: (value) {
-                                      tramos[index] = TramoHorario(
+                                      _workingHours[dia]![index] = TramoHorario(
                                         startHour: value,
-                                        endHour: tramo.endHour,
+                                        endHour: _workingHours[dia]![index].endHour,
                                       );
                                     },
                                   ),
@@ -422,8 +422,8 @@ class _StaffFormScreenState extends State<StaffFormScreen> {
                                       isDense: true,
                                     ),
                                     onChanged: (value) {
-                                      tramos[index] = TramoHorario(
-                                        startHour: tramo.startHour,
+                                      _workingHours[dia]![index] = TramoHorario(
+                                        startHour: _workingHours[dia]![index].startHour,
                                         endHour: value,
                                       );
                                     },
