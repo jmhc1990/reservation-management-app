@@ -8,7 +8,6 @@ import '../../services/user_service.dart';
 import '../booking/booking_screen.dart';
 import '../booking/my_appointments_screen.dart';
 import '../services/services_list_screen.dart';
-import '../admin/admin_screen.dart';
  
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -33,9 +32,6 @@ class HomeScreen extends StatelessWidget {
     String nombreBarbero = "David";
     int puntosFidelidad = 4;
     String userRole = 'cliente';
- 
-    // Redirección si es Admin
-    if (userRole == 'admin') return const AdminScreen();
  
     return Scaffold(
       backgroundColor: bg,
