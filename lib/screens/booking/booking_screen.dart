@@ -30,7 +30,6 @@ class _BookingScreenState extends State<BookingScreen> {
   final _catalogService = CatalogService();
   final _appointmentService = AppointmentService();
   final _userService = UserService();
-  final _now = DateTime.now();
 
   int _currentStep = 0;
 
@@ -129,6 +128,7 @@ class _BookingScreenState extends State<BookingScreen> {
     const dias = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
     final dia = dias[_selectedDate!.weekday - 1];
     final tramos = _selectedStaff!.workingHours[dia];
+    final now = DateTime.now();
 
     if (tramos == null || tramos.isEmpty) return [];
 
@@ -154,7 +154,7 @@ class _BookingScreenState extends State<BookingScreen> {
           current.isBefore(a.startTime.add(Duration(minutes: a.duration))) &&
           a.startTime.isBefore(slotEnd),
         );
-        if (!conflict && !current.isBefore(_now)) slots.add(current);
+        if (!conflict && !current.isBefore(now)) slots.add(current);
         current = current.add(Duration(minutes: duration));
       }
     }
@@ -172,7 +172,13 @@ class _BookingScreenState extends State<BookingScreen> {
     final staffStep = widget.isAdmin ? 2 : 1;
     final scheduleStep = widget.isAdmin ? 3 : 2;
     if (_currentStep == staffStep) _loadServices();
-    if (_currentStep == scheduleStep && _selectedDate != null) {
+    if (_currentStep == scheduleStep) {
+      if(_selectedDate == null) {
+        final now = DateTime.now();
+        _selectedDate = now.hour >= 23
+            ? DateTime(now.year, now.month, now.day + 1)
+            : DateTime(now.year, now.month, now.day);
+      }
       _loadAvailableSlots();
     }
   }
@@ -491,13 +497,14 @@ class _BookingScreenState extends State<BookingScreen> {
   // paso 3: seleccionar fecha y slot
 
   Widget _buildScheduleStep() {
-    final firstAvailable = _now.hour >= 23
-        ? DateTime(_now.year, _now.month, _now.day + 1)
-        : DateTime(_now.year, _now.month, _now.day);
+    final now = DateTime.now();
+    final firstAvailable = now.hour >= 23
+        ? DateTime(now.year, now.month, now.day + 1)
+        : DateTime(now.year, now.month, now.day);
 
     final initialDate = (_selectedDate != null && !_selectedDate!.isBefore(firstAvailable))
         ? _selectedDate!
-        : firstAvailable.add(const Duration(days: 1));
+        : firstAvailable;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
