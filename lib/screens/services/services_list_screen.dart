@@ -150,77 +150,147 @@ class _ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: AppColors.black,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(
-        side: const BorderSide(color: AppColors.gold, width: 0.8),
+      return InkWell(
+        onTap: !isAdmin ? () => _showDetailDialog(context) : null,
         borderRadius: BorderRadius.circular(15),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: SizedBox(width: 70, height: 70, child: _buildImage()),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    servicio.name,
-                    style: const TextStyle(
-                      color: AppColors.gold,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${servicio.duration} min • ${servicio.price}€',
-                    style: const TextStyle(color: AppColors.textSubtitle, fontSize: 14),
-                  ),
-                ],
+        child: Card(
+          color: AppColors.black,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(color: AppColors.gold, width: 0.8),
+            borderRadius: BorderRadius.circular(15),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: SizedBox(width: 70, height: 70, child: _buildImage()),
               ),
-            ),
-            if (isAdmin)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ServiceFormScreen(servicio: servicio),
-                        ),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.edit_outlined,
-                      color: AppColors.gold,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      servicio.name,
+                      style: const TextStyle(
+                        color: AppColors.gold,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    tooltip: 'Editar servicio',
-                  ),
-                  IconButton(
-                    onPressed: () => _handleDelete(context),
-                    icon: const Icon(Icons.delete_outline, color: AppColors.cancel),
-                    tooltip: 'Eliminar servicio',
-                  ),
-                ],
-              )
-            else
-              const Icon(
-                Icons.arrow_forward_ios,
-                color: AppColors.gold,
-                size: 16,
+                    const SizedBox(height: 4),
+                    Text(
+                      '${servicio.duration} min • ${servicio.price}€',
+                      style: const TextStyle(color: AppColors.textSubtitle, fontSize: 14),
+                    ),
+                  ],
+                ),
               ),
-          ],
+              if (isAdmin)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ServiceFormScreen(servicio: servicio),
+                          ),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.edit_outlined,
+                        color: AppColors.gold,
+                      ),
+                      tooltip: 'Editar servicio',
+                    ),
+                    IconButton(
+                      onPressed: () => _handleDelete(context),
+                      icon: const Icon(Icons.delete_outline, color: AppColors.cancel),
+                      tooltip: 'Eliminar servicio',
+                    ),
+                  ],
+                )
+              else
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  color: AppColors.gold,
+                  size: 16,
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
+
+  void _showDetailDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.gold, width: 1),
+        ),
+        title: Text(
+          servicio.name,
+          style: const TextStyle(
+            color: AppColors.gold,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (servicio.imageUrl != null && servicio.imageUrl!.isNotEmpty) ...[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 150,
+                  child: _buildImage(),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+            Row(
+              children: [
+                const Icon(Icons.timer, color: AppColors.gold, size: 18),
+                const SizedBox(width: 8),
+                Text('${servicio.duration} min'),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.euro, color: AppColors.gold, size: 18),
+                const SizedBox(width: 8),
+                Text('${servicio.price}€'),
+              ],
+            ),
+            if (servicio.description.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                servicio.description,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+}
 }

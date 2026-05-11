@@ -111,4 +111,13 @@ class AppointmentService {
       throw Exception('Error al actualizar el estado: ${e.message}');
     }
   }
+
+  // Elimina una cita
+  Future<void> deleteAppointment(String id) async {
+    try {
+      await _db.collection(_collection).doc(id).delete();
+    } on FirebaseException catch (e) {
+      throw Exception('Error al eliminar la cita: ${e.message}');
+    }
+  }
 }

@@ -3,53 +3,82 @@ import 'package:flutter/material.dart';
 import '../../models/staff.dart';
 import '../../models/services.dart';
 import '../../models/appointments.dart';
+import '../../models/user.dart';
 import '../../services/staff_service.dart';
 import '../../services/catalog_service.dart';
 import '../../services/appointment_service.dart';
- 
+import '../../services/user_service.dart';
+
 class BookingScreen extends StatefulWidget {
-  const BookingScreen({super.key});
- 
+  final bool isAdmin;
+  final String? preselectedClientId;
+  final DateTime? preselectedDate;
+
+  const BookingScreen({
+    super.key,
+    this.isAdmin = false,
+    this.preselectedClientId,
+    this.preselectedDate,
+  });
+
   @override
   State<BookingScreen> createState() => _BookingScreenState();
 }
- 
+
 class _BookingScreenState extends State<BookingScreen> {
   final _staffService = StaffService();
   final _catalogService = CatalogService();
   final _appointmentService = AppointmentService();
- 
+  final _userService = UserService();
+
   int _currentStep = 0;
- 
+
   // selecciones del usuario
+  ModeloUsuario? _selectedClient;
   ModeloStaff? _selectedStaff;
   ModeloServicio? _selectedService;
   DateTime? _selectedDate;
   DateTime? _selectedSlot;
- 
+
   // datos cargados de Firestore
+  List<ModeloUsuario> _userList = [];
   List<ModeloStaff> _staffList = [];
   List<ModeloServicio> _serviceList = [];
   List<DateTime> _availableSlots = [];
- 
+
+  String _searchQuery = '';
   bool _isLoading = false;
   bool _isLoadingSlots = false;
   String? _errorMessage;
- 
+
   @override
   void initState() {
     super.initState();
     _loadStaff();
+    if (widget.isAdmin) _loadUsers();
+    if (widget.preselectedDate != null) {
+      _selectedDate = widget.preselectedDate;
+    }
   }
- 
+
   // carga de datos
- 
+
+  Future<void> _loadUsers() async {
+    try {
+      final users = await _userService.getUsers();
+      setState(() => _userList = users
+          .where((u) => u.role == RolUsuario.client)
+          .toList());
+    } catch (e) {
+      setState(() => _errorMessage = e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
   Future<void> _loadStaff() async {
     setState(() => _isLoading = true);
     try {
       final staff = await _staffService.getStaff();
       setState(() {
-        // Solo mostramos staff activo
         _staffList = staff.where((s) => s.isActive).toList();
       });
     } catch (e) {
@@ -58,14 +87,13 @@ class _BookingScreenState extends State<BookingScreen> {
       setState(() => _isLoading = false);
     }
   }
- 
+
   Future<void> _loadServices() async {
     if (_selectedStaff == null) return;
     setState(() => _isLoading = true);
     try {
       final services = await _catalogService.getServices();
       setState(() {
-        // se filtra solo los servicios que ofrece el barbero seleccionado
         _serviceList = services
             .where((s) => _selectedStaff!.serviceIds.contains(s.id))
             .toList();
@@ -76,7 +104,7 @@ class _BookingScreenState extends State<BookingScreen> {
       setState(() => _isLoading = false);
     }
   }
- 
+
   Future<void> _loadAvailableSlots() async {
     if (_selectedStaff == null || _selectedService == null || _selectedDate == null) return;
     setState(() {
@@ -84,7 +112,6 @@ class _BookingScreenState extends State<BookingScreen> {
       _availableSlots = [];
     });
     try {
-      // obtenemos las citas ya existentes del barbero en ese día
       final existing = await _appointmentService.getAppointmentsByStaffAndDate(
         staffId: _selectedStaff!.id,
         date: _selectedDate!,
@@ -96,23 +123,22 @@ class _BookingScreenState extends State<BookingScreen> {
       setState(() => _isLoadingSlots = false);
     }
   }
- 
-  // genera slots libres basándose en los horarios del barbero y las citas existentes
+
   List<DateTime> _generateSlots(List<ModeloCita> existing) {
     const dias = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
     final dia = dias[_selectedDate!.weekday - 1];
     final tramos = _selectedStaff!.workingHours[dia];
- 
-    // si no trabaja ese día, no hay slots
+    final now = DateTime.now();
+
     if (tramos == null || tramos.isEmpty) return [];
- 
+
     final duration = _selectedService!.duration;
     final slots = <DateTime>[];
- 
+
     for (final tramo in tramos) {
       final startParts = tramo.startHour.split(':');
       final endParts = tramo.endHour.split(':');
- 
+
       var current = DateTime(
         _selectedDate!.year, _selectedDate!.month, _selectedDate!.day,
         int.parse(startParts[0]), int.parse(startParts[1]),
@@ -121,47 +147,56 @@ class _BookingScreenState extends State<BookingScreen> {
         _selectedDate!.year, _selectedDate!.month, _selectedDate!.day,
         int.parse(endParts[0]), int.parse(endParts[1]),
       );
- 
+
       while (current.add(Duration(minutes: duration)).compareTo(end) <= 0) {
         final slotEnd = current.add(Duration(minutes: duration));
- 
-        // comprobamos si el slot solapa con alguna cita existente
         final conflict = existing.any((a) =>
           current.isBefore(a.startTime.add(Duration(minutes: a.duration))) &&
           a.startTime.isBefore(slotEnd),
         );
- 
-        if (!conflict) slots.add(current);
+        if (!conflict && !current.isBefore(now)) slots.add(current);
         current = current.add(Duration(minutes: duration));
       }
     }
- 
+
     return slots;
   }
- 
+
   // navegación entre pasos
- 
+
   void _nextStep() {
     setState(() {
       _currentStep++;
       _errorMessage = null;
     });
-    if (_currentStep == 1) _loadServices();
+    final staffStep = widget.isAdmin ? 2 : 1;
+    final scheduleStep = widget.isAdmin ? 3 : 2;
+    if (_currentStep == staffStep) _loadServices();
+    if (_currentStep == scheduleStep) {
+      if(_selectedDate == null) {
+        final now = DateTime.now();
+        _selectedDate = now.hour >= 23
+            ? DateTime(now.year, now.month, now.day + 1)
+            : DateTime(now.year, now.month, now.day);
+      }
+      _loadAvailableSlots();
+    }
   }
- 
+
   void _prevStep() {
     setState(() {
       _currentStep--;
       _errorMessage = null;
     });
   }
- 
-  // confirmar y guardar cita 
- 
+
+  // confirmar y guardar cita
+
   Future<void> _handleConfirm() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
- 
+    final clientId = widget.isAdmin
+        ? _selectedClient!.uid
+        : FirebaseAuth.instance.currentUser!.uid;
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -169,16 +204,16 @@ class _BookingScreenState extends State<BookingScreen> {
     try {
       final cita = ModeloCita(
         id: '',
-        clientId: user.uid,
+        clientId: clientId,
         staffId: _selectedStaff!.id,
         serviceId: _selectedService!.id,
         startTime: _selectedSlot!,
         duration: _selectedService!.duration,
         status: EstadoCita.confirmed,
       );
- 
+
       await _appointmentService.createAppointment(cita);
- 
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -195,9 +230,9 @@ class _BookingScreenState extends State<BookingScreen> {
       if (mounted) setState(() => _isLoading = false);
     }
   }
- 
+
   // UI principal
- 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -216,23 +251,21 @@ class _BookingScreenState extends State<BookingScreen> {
       ),
     );
   }
- 
+
   // indicador de pasos
- 
+
   Widget _buildStepIndicator() {
-    final steps = ['Barbero', 'Servicio', 'Horario', 'Confirmar'];
- 
-    // Ancho fijo por paso para que todos ocupen el mismo espacio y las
-    // líneas divisorias queden simétricas independientemente del texto
+    final steps = widget.isAdmin
+        ? ['Cliente', 'Barbero', 'Servicio', 'Horario', 'Confirmar']
+        : ['Barbero', 'Servicio', 'Horario', 'Confirmar'];
+
     const double stepWidth = 56.0;
- 
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       child: Row(
-        // Índices pares → círculo con label, índices impares → línea divisoria
         children: List.generate(steps.length * 2 - 1, (i) {
           if (i.isOdd) {
-            // Línea entre pasos
             final stepIndex = i ~/ 2;
             return Expanded(
               child: Divider(
@@ -243,13 +276,11 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
             );
           }
- 
+
           final stepIndex = i ~/ 2;
           final isActive = stepIndex == _currentStep;
           final isDone = stepIndex < _currentStep;
- 
-          // SizedBox con ancho fijo para que "Confirmar" no ensanche su columna
-          // y desplace la línea anterior hacia la izquierda
+
           return SizedBox(
             width: stepWidth,
             child: Column(
@@ -288,19 +319,92 @@ class _BookingScreenState extends State<BookingScreen> {
       ),
     );
   }
- 
+
   Widget _buildCurrentStep() {
-    switch (_currentStep) {
-      case 0: return _buildStaffStep();
-      case 1: return _buildServiceStep();
-      case 2: return _buildScheduleStep();
-      case 3: return _buildConfirmStep();
-      default: return const SizedBox.shrink();
+    if (widget.isAdmin) {
+      switch (_currentStep) {
+        case 0: return _buildClientStep();
+        case 1: return _buildStaffStep();
+        case 2: return _buildServiceStep();
+        case 3: return _buildScheduleStep();
+        case 4: return _buildConfirmStep();
+        default: return const SizedBox.shrink();
+      }
+    } else {
+      switch (_currentStep) {
+        case 0: return _buildStaffStep();
+        case 1: return _buildServiceStep();
+        case 2: return _buildScheduleStep();
+        case 3: return _buildConfirmStep();
+        default: return const SizedBox.shrink();
+      }
     }
   }
- 
+
+  // paso 0 (solo admin): seleccionar cliente
+
+  Widget _buildClientStep() {
+    final filtered = _userList
+        .where((u) => u.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: TextField(
+            decoration: const InputDecoration(
+              labelText: 'Buscar cliente por nombre',
+              prefixIcon: Icon(Icons.search),
+              border: OutlineInputBorder(),
+            ),
+            onChanged: (value) => setState(() => _searchQuery = value),
+          ),
+        ),
+        Expanded(
+          child: filtered.isEmpty
+              ? const Center(child: Text('No se encontraron clientes'))
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: filtered.length,
+                  itemBuilder: (context, index) {
+                    final client = filtered[index];
+                    final isSelected = _selectedClient?.uid == client.uid;
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: isSelected
+                              ? const Color(0xFFD4AF37)
+                              : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                      child: ListTile(
+                        leading: const CircleAvatar(
+                          backgroundColor: Color(0x26D4AF37),
+                          child: Icon(Icons.person, color: Color(0xFFD4AF37)),
+                        ),
+                        title: Text(client.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text(client.email),
+                        trailing: isSelected
+                            ? const Icon(Icons.check_circle,
+                                color: Color(0xFFD4AF37))
+                            : null,
+                        onTap: () => setState(() => _selectedClient = client),
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+
   // paso 1: seleccionar barbero
- 
+
   Widget _buildStaffStep() {
     if (_staffList.isEmpty) {
       return const Center(child: Text('No hay barberos disponibles'));
@@ -338,9 +442,8 @@ class _BookingScreenState extends State<BookingScreen> {
                 : null,
             onTap: () => setState(() {
               _selectedStaff = staff;
-              // resetea selecciones posteriores al cambiar barbero
               _selectedService = null;
-              _selectedDate = null;
+              _selectedDate = widget.preselectedDate; // si venimos con fecha preseleccionada, la mantenemos al cambiar de barbero
               _selectedSlot = null;
               _availableSlots = [];
             }),
@@ -349,9 +452,9 @@ class _BookingScreenState extends State<BookingScreen> {
       },
     );
   }
- 
+
   // paso 2: seleccionar servicio
- 
+
   Widget _buildServiceStep() {
     if (_serviceList.isEmpty) {
       return const Center(
@@ -382,7 +485,6 @@ class _BookingScreenState extends State<BookingScreen> {
                 : null,
             onTap: () => setState(() {
               _selectedService = service;
-              // resetea slot al cambiar servicio
               _selectedSlot = null;
               _availableSlots = [];
             }),
@@ -391,10 +493,19 @@ class _BookingScreenState extends State<BookingScreen> {
       },
     );
   }
- 
+
   // paso 3: seleccionar fecha y slot
- 
+
   Widget _buildScheduleStep() {
+    final now = DateTime.now();
+    final firstAvailable = now.hour >= 23
+        ? DateTime(now.year, now.month, now.day + 1)
+        : DateTime(now.year, now.month, now.day);
+
+    final initialDate = (_selectedDate != null && !_selectedDate!.isBefore(firstAvailable))
+        ? _selectedDate!
+        : firstAvailable;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -404,8 +515,8 @@ class _BookingScreenState extends State<BookingScreen> {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: 12),
           CalendarDatePicker(
-            initialDate: DateTime.now().add(const Duration(days: 1)),
-            firstDate: DateTime.now(),
+            initialDate: initialDate,
+            firstDate: firstAvailable,
             lastDate: DateTime.now().add(const Duration(days: 30)),
             onDateChanged: (date) {
               setState(() {
@@ -446,9 +557,9 @@ class _BookingScreenState extends State<BookingScreen> {
       ),
     );
   }
- 
+
   // paso 4: confirmar reserva
- 
+
   Widget _buildConfirmStep() {
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -458,6 +569,8 @@ class _BookingScreenState extends State<BookingScreen> {
           const Text('Resumen de tu cita',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
           const SizedBox(height: 24),
+          if (widget.isAdmin && _selectedClient != null)
+            _buildConfirmRow(Icons.person_outline, 'Cliente', _selectedClient!.name),
           _buildConfirmRow(Icons.person, 'Barbero', _selectedStaff?.name ?? ''),
           _buildConfirmRow(Icons.cut, 'Servicio', _selectedService?.name ?? ''),
           _buildConfirmRow(
@@ -475,7 +588,7 @@ class _BookingScreenState extends State<BookingScreen> {
       ),
     );
   }
- 
+
   Widget _buildConfirmRow(IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -497,9 +610,9 @@ class _BookingScreenState extends State<BookingScreen> {
       ),
     );
   }
- 
+
   // banner de error
- 
+
   Widget _buildErrorBanner() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -525,19 +638,19 @@ class _BookingScreenState extends State<BookingScreen> {
       ),
     );
   }
- 
+
   // botones de navegación
- 
+
   Widget _buildNavigationButtons() {
-    // el botón de continuar solo se activa si hay selección en el paso actual
+    final lastStep = widget.isAdmin ? 4 : 3;
     final canContinue = switch (_currentStep) {
-      0 => _selectedStaff != null,
-      1 => _selectedService != null,
-      2 => _selectedSlot != null,
+      0 => widget.isAdmin ? _selectedClient != null : _selectedStaff != null,
+      1 => widget.isAdmin ? _selectedStaff != null : _selectedService != null,
+      2 => widget.isAdmin ? _selectedService != null : _selectedSlot != null,
+      3 => widget.isAdmin ? _selectedSlot != null : true,
       _ => true,
     };
- 
-    // SafeArea para que el botón no quede tapado por la navbar del sistema
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -556,7 +669,7 @@ class _BookingScreenState extends State<BookingScreen> {
               flex: 2,
               child: ElevatedButton(
                 onPressed: canContinue
-                    ? (_currentStep == 3 ? _handleConfirm : _nextStep)
+                    ? (_currentStep == lastStep ? _handleConfirm : _nextStep)
                     : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFD4AF37),
@@ -574,7 +687,9 @@ class _BookingScreenState extends State<BookingScreen> {
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.black),
                       )
-                    : Text(_currentStep == 3 ? 'Confirmar cita' : 'Continuar'),
+                    : Text(_currentStep == lastStep
+                        ? 'Confirmar cita'
+                        : 'Continuar'),
               ),
             ),
           ],

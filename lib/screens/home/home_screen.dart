@@ -3,9 +3,11 @@ import 'package:provider/provider.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/theme_controller.dart';
 import '../../core/theme/app_colors.dart';
+import '../../models/user.dart';
+import '../../services/user_service.dart';
 import '../booking/booking_screen.dart';
+import '../booking/my_appointments_screen.dart';
 import '../services/services_list_screen.dart';
-import '../admin/admin_screen.dart';
  
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -28,11 +30,8 @@ class HomeScreen extends StatelessWidget {
     // LÓGICA TEMPORAL
     bool haReservadoAntes = false;
     String nombreBarbero = "David";
-    int puntosFidelidad = 0;
+    int puntosFidelidad = 4;
     String userRole = 'cliente';
- 
-    // Redirección si es Admin
-    if (userRole == 'admin') return const AdminScreen();
  
     return Scaffold(
       backgroundColor: bg,
@@ -83,28 +82,25 @@ class HomeScreen extends StatelessWidget {
                     ]
                     // --- SI ES NUEVO ---
                     else ...[
-                      Center(
-                        child: Text(
-                          '¡Bienvenido!',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            color: textColor,
-                          ),
-                        ),
+                      _WelcomeGreeting(
+                        uid: authController.currentUser?.uid,
+                        textColor: textColor,
                       ),
                       const SizedBox(height: 20),
                       Center(
                         child: Text(
-                          'Reserva tu primera cita ahora.',
+                          'Reserva tu cita ahora mismo.',
                           style: TextStyle(color: subColor),
                         ),
                       ),
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 16),
                     ],
- 
+
+                    // sección de próximas citas (vacía si el cliente no tiene)
+                    MyAppointmentsSection(textColor: textColor),
+
                     const SizedBox(height: 10),
- 
+
                     // Botón reservar cita (BookingScreen)
                     _buildButton(
                       'RESERVAR CITA',
@@ -116,10 +112,10 @@ class HomeScreen extends StatelessWidget {
                       ),
                       icon: Icons.calendar_month,
                     ),
- 
+
                     const SizedBox(height: 12),
- 
-                    // Botón ver servicios
+
+                    // botón ver servicios
                     _buildButton(
                       haReservadoAntes ? 'RESERVAR OTRO SERVICIO' : 'VER SERVICIOS',
                       Colors.transparent,
@@ -156,7 +152,7 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     Center(
                       child: Text(
-                        '*Te faltan ${6 - puntosFidelidad} servicios para tu corte gratuito.',
+                        '*Te faltan ${10 - puntosFidelidad} servicios para tu corte gratuito.',
                         style: TextStyle(fontSize: 11, color: subColor),
                       ),
                     ),
@@ -208,7 +204,40 @@ class HomeScreen extends StatelessWidget {
 }
  
 // Componentes
- 
+
+// Saludo "Bienvenido, [nombre]" — escucha el doc del usuario en Firestore
+// si carga o falla, muestra solo "¡Bienvenido!".
+class _WelcomeGreeting extends StatelessWidget {
+  final String? uid;
+  final Color textColor;
+
+  const _WelcomeGreeting({required this.uid, required this.textColor});
+
+  @override
+  Widget build(BuildContext context) {
+    final style = TextStyle(
+      fontSize: 22,
+      fontWeight: FontWeight.w900,
+      color: textColor,
+    );
+
+    if (uid == null) {
+      return Center(child: Text('¡Bienvenido!', style: style));
+    }
+
+    return StreamBuilder<ModeloUsuario?>(
+      stream: UserService().streamUserById(uid!),
+      builder: (context, snapshot) {
+        final firstName = snapshot.data?.name.split(' ').first;
+        final text = (firstName != null && firstName.isNotEmpty)
+            ? 'Bienvenido, $firstName'
+            : '¡Bienvenido!';
+        return Center(child: Text(text, style: style));
+      },
+    );
+  }
+}
+
 class _Header extends StatelessWidget {
   final VoidCallback onLogout;
   final VoidCallback onToggleTheme;
@@ -278,23 +307,44 @@ class _SectionTitle extends StatelessWidget {
   final String title;
   final Color textColor;
   const _SectionTitle({required this.title, required this.textColor});
- 
+
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
       decoration: const BoxDecoration(
         border: Border(bottom: BorderSide(color: HomeScreen.gold, width: 1.5)),
       ),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.w900,
-          color: textColor,
-          letterSpacing: -0.5,
-        ),
+      child: Row(
+        children: [
+          // Barra de acento dorada
+          Container(
+            width: 4,
+            height: 26,
+            decoration: BoxDecoration(
+              color: HomeScreen.gold,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              color: textColor,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const Spacer(),
+          // Diamante decorativo en el lateral derecho
+          Icon(
+            Icons.diamond_outlined,
+            color: HomeScreen.gold.withValues(alpha: 0.85),
+            size: 20,
+          ),
+        ],
       ),
     );
   }
@@ -400,7 +450,7 @@ class _LoyaltyCard extends StatelessWidget {
     required this.surfaceCard,
   });
  
-  @override
+ @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
@@ -412,14 +462,15 @@ class _LoyaltyCard extends StatelessWidget {
           width: 1,
         ),
       ),
-      // Row en lugar de Wrap para que los 6 círculos quepan en una sola fila
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: List.generate(6, (index) {
+      child: GridView.count(
+        crossAxisCount: 5,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        children: List.generate(10, (index) {
           final filled = index < puntos;
           return Container(
-            width: 38,
-            height: 38,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: filled

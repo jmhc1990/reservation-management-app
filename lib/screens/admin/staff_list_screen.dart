@@ -4,6 +4,7 @@ import '../../services/staff_service.dart';
 import 'staff_form_screen.dart';
 import '../../core/theme/app_colors.dart';
 import 'staff_off_days_screen.dart';
+import '../shared/staff_profile_screen.dart';
 
 class StaffListScreen extends StatefulWidget {
   const StaffListScreen({super.key,});
@@ -122,6 +123,14 @@ class _StaffCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
+        onTap: (){
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => StaffProfileScreen(staff: staff),
+            ),
+          );
+        },
         leading: Icon(
           Icons.manage_accounts,
           size: 40,
