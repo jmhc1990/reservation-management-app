@@ -11,8 +11,7 @@ import '../../services/staff_service.dart';
 
 // Sección embebida en HomeScreen que lista las próximas citas como tarjetas compactas
 class MyAppointmentsSection extends StatefulWidget {
-  final Color textColor;
-  const MyAppointmentsSection({super.key, required this.textColor});
+  const MyAppointmentsSection({super.key});
 
   @override
   State<MyAppointmentsSection> createState() => _MyAppointmentsSectionState();
@@ -241,7 +240,7 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: widget.textColor.withValues(alpha: 0.7),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                   letterSpacing: 0.3,
                 ),
               ),
@@ -290,7 +289,7 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
                       _capitalize(shortLabel),
                       style: TextStyle(
                         fontSize: 12,
-                        color: widget.textColor.withValues(alpha: 0.6),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],

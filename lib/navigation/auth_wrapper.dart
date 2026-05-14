@@ -4,16 +4,14 @@ import 'package:provider/provider.dart';
 import '../controllers/auth_controller.dart';
 import '../models/user.dart';
 import '../screens/auth/login_screen.dart';
-import '../screens/home/home_screen.dart';
-import '../screens/admin/admin_screen.dart';
 import '../services/firestore_service.dart';
 import '../core/theme/app_colors.dart';
+import '../screens/shared/navigation_screen.dart';
 
 /// widget raíz que escucha el estado de autenticación de Firebase
 /// y redirige al usuario a la pantalla correcta de forma automática.
 ///
-/// Usuario autenticado  -> [AdminPanelScreen] si rol admin
-/// Usuario autenticado  -> [HomeScreen] si rol client/staff
+/// Usuario autenticado  -> [NavigationScreen] (con rol leído de Firestore)
 /// Usuario sin sesión   -> [LoginScreen]
 /// Cargando             -> Pantalla de splash
 class AuthWrapper extends StatelessWidget {
@@ -42,8 +40,10 @@ class AuthWrapper extends StatelessWidget {
                 return const _SplashScreen();
               }
               final role = roleSnapshot.data ?? RolUsuario.client;
-              if (role == RolUsuario.admin) return const AdminScreen();
-              return const HomeScreen();
+              return NavigationScreen(
+                role: role,
+                uid: snapshot.data!.uid,
+              );
             },
           );
         }

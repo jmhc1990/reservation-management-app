@@ -17,8 +17,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authController = Provider.of<AuthController>(context);
-    final themeController = Provider.of<ThemeController>(context);
-    final isDark = themeController.isDark;
+    final isDark = context.watch<ThemeController>().isDark;
  
     // Colores dinámicos según tema
     final bg          = isDark ? AppColors.darkBackground : AppColors.lightBackground;
@@ -31,18 +30,12 @@ class HomeScreen extends StatelessWidget {
     bool haReservadoAntes = false;
     String nombreBarbero = "David";
     int puntosFidelidad = 4;
-    String userRole = 'cliente';
  
-    return Scaffold(
-      backgroundColor: bg,
-      body: SafeArea(
+    return ColoredBox(
+      color: bg,
+      child: SafeArea(
         child: Column(
           children: [
-            _Header(
-              onLogout: () => authController.logout(),
-              onToggleTheme: () => themeController.toggle(),
-              isDark: isDark,
-            ),
             _SectionTitle(title: 'Inicio', textColor: textColor),
             Expanded(
               child: SingleChildScrollView(
@@ -97,7 +90,7 @@ class HomeScreen extends StatelessWidget {
                     ],
 
                     // sección de próximas citas (vacía si el cliente no tiene)
-                    MyAppointmentsSection(textColor: textColor),
+                    const MyAppointmentsSection(),
 
                     const SizedBox(height: 10),
 
@@ -234,71 +227,6 @@ class _WelcomeGreeting extends StatelessWidget {
             : '¡Bienvenido!';
         return Center(child: Text(text, style: style));
       },
-    );
-  }
-}
-
-class _Header extends StatelessWidget {
-  final VoidCallback onLogout;
-  final VoidCallback onToggleTheme;
-  final bool isDark;
- 
-  const _Header({
-    required this.onLogout,
-    required this.onToggleTheme,
-    required this.isDark,
-  });
- 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 58,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: HomeScreen.gold, width: 1.5)),
-      ),
-      child: Row(
-        children: [
-          const Spacer(),
-          // Botón de cambio de tema
-          IconButton(
-            onPressed: onToggleTheme,
-            tooltip: isDark ? 'Modo claro' : 'Modo oscuro',
-            icon: Icon(
-              isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-              color: HomeScreen.gold,
-            ),
-          ),
-          // Botón de cerrar sesión con diálogo de confirmación
-          IconButton(
-            onPressed: () async {
-              final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  title: const Text('Cerrar sesión'),
-                  content: const Text('¿Seguro que quieres cerrar sesión?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx, false),
-                      child: const Text('Cancelar'),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx, true),
-                      child: const Text(
-                        'Cerrar sesión',
-                        style: TextStyle(color: Colors.redAccent),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-              if (confirmed == true) onLogout();
-            },
-            tooltip: 'Cerrar sesión',
-            icon: const Icon(Icons.logout, color: HomeScreen.gold),
-          ),
-        ],
-      ),
     );
   }
 }
