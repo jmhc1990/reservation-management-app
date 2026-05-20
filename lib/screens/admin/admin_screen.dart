@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../controllers/auth_controller.dart';
 import '../../core/theme/app_colors.dart';
 import '../services/services_list_screen.dart';
+import '../shared/settings_screen.dart';
 import 'users_list_screen.dart';
 import 'staff_list_screen.dart';
 import 'staff_selector_screen.dart';
 import 'appointments_screen.dart';
-import '../../controllers/theme_controller.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -27,29 +25,6 @@ class _AdminScreenState extends State<AdminScreen> {
     const StaffSelectorScreen(),
   ];
 
-  Future<void> _handleLogout(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Cerrar sesión'),
-        content: const Text('¿Estás seguro de que quieres cerrar sesión?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Cerrar sesión'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true && context.mounted) {
-      await context.read<AuthController>().logout();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,18 +32,12 @@ class _AdminScreenState extends State<AdminScreen> {
         title: const Text('Panel de administración'),
         actions: [
           IconButton(
-            onPressed: () => context.read<ThemeController>().toggle(),
-            icon: Icon(
-              context.watch<ThemeController>().isDark
-                  ? Icons.light_mode_outlined
-                  : Icons.dark_mode_outlined,
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
             ),
-            tooltip: 'Cambiar tema',
-          ),
-          IconButton(
-            onPressed: () => _handleLogout(context),
-            icon: const Icon(Icons.logout),
-            tooltip: 'Cerrar sesión',
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Ajustes',
           ),
         ],
       ),
