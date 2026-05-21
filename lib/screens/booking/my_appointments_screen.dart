@@ -83,9 +83,9 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
 
   Future<bool> _doCancel(ModeloCita cita) async {
     try {
-      await _appointmentService.updateStatus(
+      await _appointmentService.cancelAppointment(
         appointmentId: cita.id,
-        newStatus: EstadoCita.cancelled,
+        startTime: cita.startTime,
       );
       if (!mounted) return false;
       ScaffoldMessenger.of(context).showSnackBar(

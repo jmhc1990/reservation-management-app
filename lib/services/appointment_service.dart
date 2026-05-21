@@ -98,6 +98,21 @@ class AppointmentService {
     });
   }
 
+  // Cancela una cita validando que falten más de 2 horas
+  Future<void> cancelAppointment({
+    required String appointmentId,
+    required DateTime startTime,
+  }) async {
+    const minHours = 2;
+    if (DateTime.now().isAfter(startTime.subtract(const Duration(hours: minHours)))) {
+      throw Exception(
+        'No es posible cancelar la cita con menos de $minHours horas de antelación. '
+        'Por favor contacta con la barbería.',
+      );
+    }
+    await updateStatus(appointmentId: appointmentId, newStatus: EstadoCita.cancelled);
+  }
+
   // Actualiza el estado de una cita
   Future<void> updateStatus({
     required String appointmentId,
