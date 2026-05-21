@@ -165,6 +165,7 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
                         ),
                       ),
                       const SizedBox(width: 12),
+                      if (cita.status != EstadoCita.cancelled)
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: cancelling
@@ -224,7 +225,7 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
         final now = DateTime.now();
         final upcoming = (snapshot.data ?? [])
             .where((c) =>
-                c.status == EstadoCita.confirmed && c.startTime.isAfter(now))
+                c.startTime.isAfter(now))
             .toList()
           ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
@@ -275,14 +276,22 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      service?.name ?? 'Servicio',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            service?.name ?? 'Servicio',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildStatusBadge(cita.status),
+                      ],
                     ),
                     const SizedBox(height: 2),
                     Text(
