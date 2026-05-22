@@ -209,7 +209,7 @@ class _BookingScreenState extends State<BookingScreen> {
         serviceId: _selectedService!.id,
         startTime: _selectedSlot!,
         duration: _selectedService!.duration,
-        status: EstadoCita.confirmed,
+        status: EstadoCita.pending,
       );
 
       await _appointmentService.createAppointment(cita);

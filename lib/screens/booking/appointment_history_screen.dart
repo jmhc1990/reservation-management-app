@@ -54,6 +54,7 @@ class _AppointmentHistoryScreenState extends State<AppointmentHistoryScreen> {
 
   String _statusLabel(EstadoCita status) {
     return switch (status) {
+      EstadoCita.pending => 'Pendiente',
       EstadoCita.confirmed => 'Confirmada',
       EstadoCita.cancelled => 'Cancelada',
       EstadoCita.completed => 'Completada',
@@ -63,6 +64,7 @@ class _AppointmentHistoryScreenState extends State<AppointmentHistoryScreen> {
 
   Color _statusColor(EstadoCita status) {
     return switch (status) {
+      EstadoCita.pending => AppColors.pending,
       EstadoCita.confirmed => AppColors.confirmation,
       EstadoCita.cancelled => AppColors.cancel,
       EstadoCita.completed => AppColors.gold,

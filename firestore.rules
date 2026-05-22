@@ -56,16 +56,14 @@ service cloud.firestore {
     // Colección citas (appointments)
     match /appointments/{appointmentId} {
 
-      // Leer: Cliente ve sus citas, staff ve solo las suyas, admin ve todas
-      allow read: if isAuthenticated() 
-                    && (isAdmin()
-                    || resource.data.client_id == request.auth.uid
-                    || resource.data.staff_id == request.auth.uid);
+      // Leer: cualquier usuario autenticado puede leer citas (necesario para consultar
+      // slots ocupados de un barbero al seleccionar fecha en el booking flow)
+      allow read: if isAuthenticated();
 
       // Crear: cliente o admin pueden crear citas
       allow create: if isAuthenticated()
                       && (isClient() || isAdmin())
-                      && request.resource.data.status == 'confirmed'
+                      && request.resource.data.status == 'pending'
                       && request.resource.data.client_id is string
                       && request.resource.data.staff_id is string
                       && request.resource.data.service_id is string;
