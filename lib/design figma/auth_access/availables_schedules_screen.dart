@@ -88,7 +88,7 @@ class HorariosDisponibles extends StatelessWidget {
   Widget _buildHoraBtn(String hora, Color gold, bool disponible) {
     return Container(
       decoration: BoxDecoration(
-        color: disponible ? Colors.white : Colors.grey.withOpacity(0.2),
+        color: disponible ? Colors.white : Colors.grey.withValues(alpha: 0.2),
         border: Border.all(color: disponible ? gold : Colors.transparent),
         borderRadius: BorderRadius.circular(8),
       ),

@@ -21,7 +21,7 @@ class ReservaConfirmada extends StatelessWidget {
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  color: goldColor.withOpacity(0.1),
+                  color: goldColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.check_circle_outline, color: goldColor, size: 80),
@@ -57,9 +57,9 @@ class ReservaConfirmada extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: goldColor.withOpacity(0.3)),
+                  border: Border.all(color: goldColor.withValues(alpha: 0.3)),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)
                   ],
                 ),
                 child: Column(
