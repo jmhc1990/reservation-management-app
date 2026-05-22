@@ -1,0 +1,125 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Funciones para simplificar
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return request.auth.uid == uid;
+    }
+
+    function getRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && getRole() == 'admin';
+    }
+
+    function isStaff() {
+      return isAuthenticated() && getRole() == 'staff';
+    }
+
+    function isClient() {
+      return isAuthenticated() && getRole() == 'client';
+    }
+
+    // Colección users
+    match /users/{uid} {
+
+      // Leer: el usuario y staff pueden ver su perfil y admin puede verlos todos
+      allow read: if isOwner(uid) || isAdmin();
+
+      // Crear: solo el propio usuario, role forzado a 'client'
+      // staff los asigna el admin manualmente
+      allow create: if isOwner(uid)
+                      && request.resource.data.role == 'client'
+                      && request.resource.data.email is string
+                      && request.resource.data.email.size() > 0
+                      && request.resource.data.name is string
+                      && request.resource.data.name.size() > 0;
+
+      // Actualizar: El usuario y staff pueden editar su perfil pero NO su role, solo admin puede cambiar el rol
+      allow update: if (isOwner(uid)
+                      && !('role' in request.resource.data.diff(resource.data).affectedKeys()))
+                      || isAdmin();
+
+      // Eliminar: solo el admin
+      allow delete: if isAdmin();
+    }
+
+    // Colección citas (appointments)
+    match /appointments/{appointmentId} {
+
+      // Leer: Cliente ve sus citas, staff ve solo las suyas, admin ve todas
+      allow read: if isAuthenticated() 
+                    && (isAdmin()
+                    || resource.data.client_id == request.auth.uid
+                    || resource.data.staff_id == request.auth.uid);
+
+      // Crear: cliente o admin pueden crear citas
+      allow create: if isAuthenticated()
+                      && (isClient() || isAdmin())
+                      && request.resource.data.status == 'confirmed'
+                      && request.resource.data.client_id is string
+                      && request.resource.data.staff_id is string
+                      && request.resource.data.service_id is string;
+
+      // Actualizar:
+      // - staff solo puede cambiar el campo 'status'
+      // - cliente solo puede cancelar SU propia cita (status -> 'cancelled')
+      // - admin puede modificar todo
+      allow update: if isAdmin()
+                      || (isStaff()
+                      && resource.data.staff_id == request.auth.uid
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+                      || (isClient()
+                      && resource.data.client_id == request.auth.uid
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+                      && request.resource.data.status == 'cancelled');
+
+      // Eliminar: solo admin
+      allow delete: if isAdmin();
+    }
+
+    // Colección: servicios (el catálogo)
+    match /services/{serviceId} {
+
+      // Leer: cualquier usuario autenticado puede ver
+      allow read: if isAuthenticated();
+
+      // Crear, actualizar, eliminar: solo admin
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Colección: staff (empleados)
+    match /staff/{staffId} {
+
+      // Leer: cualquier usuario autenticado
+      allow read: if isAuthenticated();
+
+      // Crear, actualizar, eliminar: solo admin
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Colección: staff_off_days (vacaciones)
+    match /staff_off_days/{offDayId} {
+
+      // Leer: cualquier usuario autenticado
+      allow read: if isAuthenticated();
+
+      // Crear, actualizar, eliminar: solo admin
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Deniega todo lo demás
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
