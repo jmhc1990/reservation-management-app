@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum EstadoCita { confirmed, cancelled, completed, noShow }
+enum EstadoCita { pending, confirmed, cancelled, completed, noShow }
 
 class ModeloCita {
   final String id;
