@@ -6,6 +6,7 @@ import '../admin/appointments_screen.dart';
 import '../admin/staff_list_screen.dart';
 import '../admin/staff_selector_screen.dart';
 import '../admin/users_list_screen.dart';
+import '../booking/appointment_history_screen.dart';
 import '../home/home_screen.dart';
 import '../services/services_list_screen.dart';
 import '../shared/settings_screen.dart';
@@ -40,6 +41,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
     } else {
       return [
         const HomeScreen(),
+        AppointmentHistoryScreen(),
         StreamBuilder<ModeloUsuario?>(
           stream: UserService().streamUserById(widget.uid),
           builder: (context, snapshot) {
@@ -68,6 +70,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
     } else {
       return const [
         BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Inicio'),
+        BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Historial'),
         BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Mi perfil'),
       ];
     }
