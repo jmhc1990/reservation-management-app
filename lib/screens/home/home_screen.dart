@@ -27,7 +27,9 @@ class HomeScreen extends StatelessWidget {
     final subColor    = isDark ? Colors.white60 : Colors.black54;
  
     // LÓGICA TEMPORAL
-    const int puntosFidelidad = 4;
+    bool haReservadoAntes = false;
+    String nombreBarbero = "David";
+    int puntosFidelidad = 4;
  
     return ColoredBox(
       color: bg,
@@ -43,18 +45,49 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     const SizedBox(height: 20),
  
-                    _WelcomeGreeting(
-                      uid: authController.currentUser?.uid,
-                      textColor: textColor,
-                    ),
-                    const SizedBox(height: 20),
-                    Center(
-                      child: Text(
-                        'Reserva tu cita ahora mismo.',
-                        style: TextStyle(color: subColor),
+                    // --- SI YA ES CLIENTE ---
+                    if (haReservadoAntes) ...[
+                      Text(
+                        'Tus Servicios Favoritos',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: textColor,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 10),
+                      _ExpertCard(
+                        nombre: nombreBarbero,
+                        cardColor: surfaceCard,
+                        textColor: textColor,
+                        subColor: subColor,
+                      ),
+                      const SizedBox(height: 14),
+                      _ServiceInfo(textColor: textColor, subColor: subColor),
+                      const SizedBox(height: 16),
+                      _buildButton(
+                        'REPETIR ESTA EXPERIENCIA',
+                        gold,
+                        Colors.black,
+                        () {},
+                        icon: Icons.repeat,
+                      ),
+                    ]
+                    // --- SI ES NUEVO ---
+                    else ...[
+                      _WelcomeGreeting(
+                        uid: authController.currentUser?.uid,
+                        textColor: textColor,
+                      ),
+                      const SizedBox(height: 20),
+                      Center(
+                        child: Text(
+                          'Reserva tu cita ahora mismo.',
+                          style: TextStyle(color: subColor),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
 
                     // sección de próximas citas (vacía si el cliente no tiene)
                     const MyAppointmentsSection(),
@@ -77,7 +110,7 @@ class HomeScreen extends StatelessWidget {
 
                     // botón ver servicios
                     _buildButton(
-                      'VER SERVICIOS',
+                      haReservadoAntes ? 'RESERVAR OTRO SERVICIO' : 'VER SERVICIOS',
                       Colors.transparent,
                       gold,
                       () => Navigator.push(
@@ -251,6 +284,85 @@ class _GoldDivider extends StatelessWidget {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 10),
       child: Divider(color: HomeScreen.gold, thickness: 1),
+    );
+  }
+}
+ 
+class _ExpertCard extends StatelessWidget {
+  final String nombre;
+  final Color cardColor;
+  final Color textColor;
+  final Color subColor;
+ 
+  const _ExpertCard({
+    required this.nombre,
+    required this.cardColor,
+    required this.textColor,
+    required this.subColor,
+  });
+ 
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 90,
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: HomeScreen.gold.withValues(alpha: 0.25),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 34,
+            backgroundColor: HomeScreen.gold.withValues(alpha: 0.15),
+            child: const Icon(Icons.person, color: HomeScreen.gold, size: 34),
+          ),
+          const SizedBox(width: 20),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(nombre,
+                  style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w900,
+                      color: textColor)),
+              Text('Tu experto',
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: subColor)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+ 
+class _ServiceInfo extends StatelessWidget {
+  final Color textColor;
+  final Color subColor;
+  const _ServiceInfo({required this.textColor, required this.subColor});
+ 
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('✂️ Corte Signature',
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                color: textColor)),
+        const SizedBox(height: 4),
+        Text('Asesoramiento, corte a tijera y lavado\npremium. 60 min.',
+            style: TextStyle(fontSize: 13, color: subColor)),
+      ],
     );
   }
 }

@@ -8,7 +8,6 @@ import '../../services/staff_service.dart';
 import '../../services/catalog_service.dart';
 import '../../services/appointment_service.dart';
 import '../../services/user_service.dart';
-import '../../services/payment_service.dart';
 
 class BookingScreen extends StatefulWidget {
   final bool isAdmin;
@@ -203,14 +202,6 @@ class _BookingScreenState extends State<BookingScreen> {
       _errorMessage = null;
     });
     try {
-      final amountCents = (_selectedService!.price * 100).toInt();
-      final paid = await PaymentService().processPayment(amountCents: amountCents);
-
-      if (!paid) {
-        setState(() => _errorMessage = 'El pago no se ha completado. Inténtalo de nuevo.');
-        return;
-      }
-
       final cita = ModeloCita(
         id: '',
         clientId: clientId,
@@ -226,7 +217,10 @@ class _BookingScreenState extends State<BookingScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('¡Cita reservada y pago completado!'),
+          content: Text(
+            '¡Cita reservada correctamente!',
+            textAlign: TextAlign.center,
+          ),
         ),
       );
       Navigator.pop(context);
