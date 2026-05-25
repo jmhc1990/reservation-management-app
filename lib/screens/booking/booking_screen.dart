@@ -8,6 +8,7 @@ import '../../services/staff_service.dart';
 import '../../services/catalog_service.dart';
 import '../../services/appointment_service.dart';
 import '../../services/user_service.dart';
+import 'reservation_confirmed_screen.dart';
 
 class BookingScreen extends StatefulWidget {
   final bool isAdmin;
@@ -66,11 +67,15 @@ class _BookingScreenState extends State<BookingScreen> {
   Future<void> _loadUsers() async {
     try {
       final users = await _userService.getUsers();
-      setState(() => _userList = users
-          .where((u) => u.role == RolUsuario.client)
-          .toList());
+      setState(
+        () => _userList = users
+            .where((u) => u.role == RolUsuario.client)
+            .toList(),
+      );
     } catch (e) {
-      setState(() => _errorMessage = e.toString().replaceAll('Exception: ', ''));
+      setState(
+        () => _errorMessage = e.toString().replaceAll('Exception: ', ''),
+      );
     }
   }
 
@@ -82,7 +87,9 @@ class _BookingScreenState extends State<BookingScreen> {
         _staffList = staff.where((s) => s.isActive).toList();
       });
     } catch (e) {
-      setState(() => _errorMessage = e.toString().replaceAll('Exception: ', ''));
+      setState(
+        () => _errorMessage = e.toString().replaceAll('Exception: ', ''),
+      );
     } finally {
       setState(() => _isLoading = false);
     }
@@ -99,14 +106,19 @@ class _BookingScreenState extends State<BookingScreen> {
             .toList();
       });
     } catch (e) {
-      setState(() => _errorMessage = e.toString().replaceAll('Exception: ', ''));
+      setState(
+        () => _errorMessage = e.toString().replaceAll('Exception: ', ''),
+      );
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
   Future<void> _loadAvailableSlots() async {
-    if (_selectedStaff == null || _selectedService == null || _selectedDate == null) return;
+    if (_selectedStaff == null ||
+        _selectedService == null ||
+        _selectedDate == null)
+      return;
     setState(() {
       _isLoadingSlots = true;
       _availableSlots = [];
@@ -118,7 +130,9 @@ class _BookingScreenState extends State<BookingScreen> {
       );
       setState(() => _availableSlots = _generateSlots(existing));
     } catch (e) {
-      setState(() => _errorMessage = e.toString().replaceAll('Exception: ', ''));
+      setState(
+        () => _errorMessage = e.toString().replaceAll('Exception: ', ''),
+      );
     } finally {
       setState(() => _isLoadingSlots = false);
     }
@@ -140,19 +154,28 @@ class _BookingScreenState extends State<BookingScreen> {
       final endParts = tramo.endHour.split(':');
 
       var current = DateTime(
-        _selectedDate!.year, _selectedDate!.month, _selectedDate!.day,
-        int.parse(startParts[0]), int.parse(startParts[1]),
+        _selectedDate!.year,
+        _selectedDate!.month,
+        _selectedDate!.day,
+        int.parse(startParts[0]),
+        int.parse(startParts[1]),
       );
       final end = DateTime(
-        _selectedDate!.year, _selectedDate!.month, _selectedDate!.day,
-        int.parse(endParts[0]), int.parse(endParts[1]),
+        _selectedDate!.year,
+        _selectedDate!.month,
+        _selectedDate!.day,
+        int.parse(endParts[0]),
+        int.parse(endParts[1]),
       );
 
       while (current.add(Duration(minutes: duration)).compareTo(end) <= 0) {
         final slotEnd = current.add(Duration(minutes: duration));
-        final conflict = existing.any((a) =>
-          current.isBefore(a.startTime.add(Duration(minutes: a.duration))) &&
-          a.startTime.isBefore(slotEnd),
+        final conflict = existing.any(
+          (a) =>
+              current.isBefore(
+                a.startTime.add(Duration(minutes: a.duration)),
+              ) &&
+              a.startTime.isBefore(slotEnd),
         );
         if (!conflict && !current.isBefore(now)) slots.add(current);
         current = current.add(Duration(minutes: duration));
@@ -173,7 +196,7 @@ class _BookingScreenState extends State<BookingScreen> {
     final scheduleStep = widget.isAdmin ? 3 : 2;
     if (_currentStep == staffStep) _loadServices();
     if (_currentStep == scheduleStep) {
-      if(_selectedDate == null) {
+      if (_selectedDate == null) {
         final now = DateTime.now();
         _selectedDate = now.hour >= 23
             ? DateTime(now.year, now.month, now.day + 1)
@@ -215,17 +238,27 @@ class _BookingScreenState extends State<BookingScreen> {
       await _appointmentService.createAppointment(cita);
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            '¡Cita reservada correctamente!',
-            textAlign: TextAlign.center,
+
+      final fechaFormateada =
+          '${_selectedSlot!.day}/${_selectedSlot!.month}/${_selectedSlot!.year}';
+      final horaFormateada =
+          '${_selectedSlot!.hour.toString().padLeft(2, '0')}:${_selectedSlot!.minute.toString().padLeft(2, '0')}';
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ReservaConfirmada(
+            barbero: _selectedStaff?.name ?? 'Barbero',
+            servicio: _selectedService?.name ?? 'Servicio',
+            fecha: fechaFormateada,
+            hora: horaFormateada,
           ),
         ),
       );
-      Navigator.pop(context);
     } catch (e) {
-      setState(() => _errorMessage = e.toString().replaceAll('Exception: ', ''));
+      setState(
+        () => _errorMessage = e.toString().replaceAll('Exception: ', ''),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -323,20 +356,31 @@ class _BookingScreenState extends State<BookingScreen> {
   Widget _buildCurrentStep() {
     if (widget.isAdmin) {
       switch (_currentStep) {
-        case 0: return _buildClientStep();
-        case 1: return _buildStaffStep();
-        case 2: return _buildServiceStep();
-        case 3: return _buildScheduleStep();
-        case 4: return _buildConfirmStep();
-        default: return const SizedBox.shrink();
+        case 0:
+          return _buildClientStep();
+        case 1:
+          return _buildStaffStep();
+        case 2:
+          return _buildServiceStep();
+        case 3:
+          return _buildScheduleStep();
+        case 4:
+          return _buildConfirmStep();
+        default:
+          return const SizedBox.shrink();
       }
     } else {
       switch (_currentStep) {
-        case 0: return _buildStaffStep();
-        case 1: return _buildServiceStep();
-        case 2: return _buildScheduleStep();
-        case 3: return _buildConfirmStep();
-        default: return const SizedBox.shrink();
+        case 0:
+          return _buildStaffStep();
+        case 1:
+          return _buildServiceStep();
+        case 2:
+          return _buildScheduleStep();
+        case 3:
+          return _buildConfirmStep();
+        default:
+          return const SizedBox.shrink();
       }
     }
   }
@@ -386,12 +430,16 @@ class _BookingScreenState extends State<BookingScreen> {
                           backgroundColor: Color(0x26D4AF37),
                           child: Icon(Icons.person, color: Color(0xFFD4AF37)),
                         ),
-                        title: Text(client.name,
-                            style: const TextStyle(fontWeight: FontWeight.bold)),
+                        title: Text(
+                          client.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         subtitle: Text(client.email),
                         trailing: isSelected
-                            ? const Icon(Icons.check_circle,
-                                color: Color(0xFFD4AF37))
+                            ? const Icon(
+                                Icons.check_circle,
+                                color: Color(0xFFD4AF37),
+                              )
                             : null,
                         onTap: () => setState(() => _selectedClient = client),
                       ),
@@ -434,8 +482,10 @@ class _BookingScreenState extends State<BookingScreen> {
                   ? const Icon(Icons.person, color: Color(0xFFD4AF37))
                   : null,
             ),
-            title: Text(staff.name,
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(
+              staff.name,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             subtitle: Text(staff.specialization.name),
             trailing: isSelected
                 ? const Icon(Icons.check_circle, color: Color(0xFFD4AF37))
@@ -443,7 +493,8 @@ class _BookingScreenState extends State<BookingScreen> {
             onTap: () => setState(() {
               _selectedStaff = staff;
               _selectedService = null;
-              _selectedDate = widget.preselectedDate; // si venimos con fecha preseleccionada, la mantenemos al cambiar de barbero
+              _selectedDate = widget
+                  .preselectedDate; // si venimos con fecha preseleccionada, la mantenemos al cambiar de barbero
               _selectedSlot = null;
               _availableSlots = [];
             }),
@@ -458,7 +509,8 @@ class _BookingScreenState extends State<BookingScreen> {
   Widget _buildServiceStep() {
     if (_serviceList.isEmpty) {
       return const Center(
-          child: Text('Este barbero no tiene servicios asignados'));
+        child: Text('Este barbero no tiene servicios asignados'),
+      );
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -477,8 +529,10 @@ class _BookingScreenState extends State<BookingScreen> {
           ),
           child: ListTile(
             leading: const Icon(Icons.cut, color: Color(0xFFD4AF37)),
-            title: Text(service.name,
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(
+              service.name,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             subtitle: Text('${service.duration} min · ${service.price}€'),
             trailing: isSelected
                 ? const Icon(Icons.check_circle, color: Color(0xFFD4AF37))
@@ -502,7 +556,8 @@ class _BookingScreenState extends State<BookingScreen> {
         ? DateTime(now.year, now.month, now.day + 1)
         : DateTime(now.year, now.month, now.day);
 
-    final initialDate = (_selectedDate != null && !_selectedDate!.isBefore(firstAvailable))
+    final initialDate =
+        (_selectedDate != null && !_selectedDate!.isBefore(firstAvailable))
         ? _selectedDate!
         : firstAvailable;
 
@@ -511,8 +566,10 @@ class _BookingScreenState extends State<BookingScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Selecciona una fecha',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const Text(
+            'Selecciona una fecha',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
           const SizedBox(height: 12),
           CalendarDatePicker(
             initialDate: initialDate,
@@ -529,8 +586,10 @@ class _BookingScreenState extends State<BookingScreen> {
           ),
           if (_selectedDate != null) ...[
             const SizedBox(height: 16),
-            const Text('Horarios disponibles',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const Text(
+              'Horarios disponibles',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
             const SizedBox(height: 12),
             if (_isLoadingSlots)
               const Center(child: CircularProgressIndicator())
@@ -566,17 +625,29 @@ class _BookingScreenState extends State<BookingScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Resumen de tu cita',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+          const Text(
+            'Resumen de tu cita',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          ),
           const SizedBox(height: 24),
           if (widget.isAdmin && _selectedClient != null)
-            _buildConfirmRow(Icons.person_outline, 'Cliente', _selectedClient!.name),
+            _buildConfirmRow(
+              Icons.person_outline,
+              'Cliente',
+              _selectedClient!.name,
+            ),
           _buildConfirmRow(Icons.person, 'Barbero', _selectedStaff?.name ?? ''),
           _buildConfirmRow(Icons.cut, 'Servicio', _selectedService?.name ?? ''),
           _buildConfirmRow(
-              Icons.euro, 'Precio', '${_selectedService?.price ?? ''}€'),
-          _buildConfirmRow(Icons.timer, 'Duración',
-              '${_selectedService?.duration ?? ''} min'),
+            Icons.euro,
+            'Precio',
+            '${_selectedService?.price ?? ''}€',
+          ),
+          _buildConfirmRow(
+            Icons.timer,
+            'Duración',
+            '${_selectedService?.duration ?? ''} min',
+          ),
           if (_selectedSlot != null)
             _buildConfirmRow(
               Icons.calendar_today,
@@ -599,11 +670,17 @@ class _BookingScreenState extends State<BookingScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label,
-                  style: const TextStyle(color: Colors.grey, fontSize: 12)),
-              Text(value,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 15)),
+              Text(
+                label,
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+              ),
             ],
           ),
         ],
@@ -627,8 +704,10 @@ class _BookingScreenState extends State<BookingScreen> {
           const Icon(Icons.error_outline, color: Colors.redAccent, size: 18),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(_errorMessage!,
-                style: const TextStyle(color: Colors.redAccent)),
+            child: Text(
+              _errorMessage!,
+              style: const TextStyle(color: Colors.redAccent),
+            ),
           ),
           IconButton(
             icon: const Icon(Icons.close, size: 18),
@@ -674,22 +753,28 @@ class _BookingScreenState extends State<BookingScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFD4AF37),
                   foregroundColor: Colors.black,
-                  disabledBackgroundColor:
-                      const Color(0xFFD4AF37).withValues(alpha: 0.4),
+                  disabledBackgroundColor: const Color(
+                    0xFFD4AF37,
+                  ).withValues(alpha: 0.4),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 child: _isLoading
                     ? const SizedBox(
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.black),
+                          strokeWidth: 2,
+                          color: Colors.black,
+                        ),
                       )
-                    : Text(_currentStep == lastStep
-                        ? 'Confirmar cita'
-                        : 'Continuar'),
+                    : Text(
+                        _currentStep == lastStep
+                            ? 'Confirmar cita'
+                            : 'Continuar',
+                      ),
               ),
             ),
           ],

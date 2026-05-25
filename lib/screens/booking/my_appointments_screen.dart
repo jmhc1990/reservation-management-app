@@ -8,6 +8,7 @@ import '../../models/staff.dart';
 import '../../services/appointment_service.dart';
 import '../../services/catalog_service.dart';
 import '../../services/staff_service.dart';
+import 'reservation_canceled_screen.dart';
 
 // Sección embebida en HomeScreen que lista las próximas citas como tarjetas compactas
 class MyAppointmentsSection extends StatefulWidget {
@@ -114,8 +115,10 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
   void _showDetailDialog(ModeloCita cita) {
     final staff = _staffById[cita.staffId];
     final service = _serviceById[cita.serviceId];
-    final dateLabel =
-        DateFormat("EEEE d 'de' MMMM 'de' y", 'es_ES').format(cita.startTime);
+    final dateLabel = DateFormat(
+      "EEEE d 'de' MMMM 'de' y",
+      'es_ES',
+    ).format(cita.startTime);
     final timeLabel = DateFormat('HH:mm').format(cita.startTime);
 
     showDialog(
@@ -151,7 +154,10 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _infoRow(Icons.person, staff?.name ?? 'Barbero no disponible'),
+                  _infoRow(
+                    Icons.person,
+                    staff?.name ?? 'Barbero no disponible',
+                  ),
                   const SizedBox(height: 8),
                   _infoRow(Icons.calendar_today, _capitalize(dateLabel)),
                   const SizedBox(height: 8),
@@ -173,38 +179,57 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
                       ),
                       const SizedBox(width: 12),
                       if (cita.status != EstadoCita.cancelled)
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: cancelling
-                              ? null
-                              : () async {
-                                  if (!await _confirmCancel()) return;
-                                  setDialogState(() => cancelling = true);
-                                  final ok = await _doCancel(cita);
-                                  if (!mounted || !dialogCtx.mounted) return;
-                                  if (ok) {
-                                    Navigator.pop(dialogCtx);
-                                  } else {
-                                    setDialogState(() => cancelling = false);
-                                  }
-                                },
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.cancel,
-                            side: const BorderSide(color: AppColors.cancel),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: cancelling
+                                ? null
+                                : () async {
+                                    if (!await _confirmCancel()) return;
+                                    setDialogState(() => cancelling = true);
+                                    final ok = await _doCancel(cita);
+                                    if (!mounted || !dialogCtx.mounted) return;
+                                    if (ok) {
+                                      // 1. Cerramos primero el cuadro flotante
+                                      Navigator.pop(dialogCtx);
+
+                                      // 2. Saltamos a tu pantalla de cancelación con las variables correctas
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              ReservaCancelada(
+                                                barbero:
+                                                    staff?.name ?? 'Barbero',
+                                                servicio:
+                                                    service?.name ?? 'Servicio',
+                                                fecha: dateLabel,
+                                                hora: timeLabel,
+                                              ),
+                                        ),
+                                      );
+                                    } else {
+                                      setDialogState(() => cancelling = false);
+                                    }
+                                  },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.cancel,
+                              side: const BorderSide(color: AppColors.cancel),
+                            ),
+                            icon: cancelling
+                                ? const SizedBox(
+                                    height: 14,
+                                    width: 14,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppColors.cancel,
+                                    ),
+                                  )
+                                : const Icon(Icons.cancel_outlined, size: 16),
+                            label: Text(
+                              cancelling ? 'Cancelando...' : 'Cancelar',
+                            ),
                           ),
-                          icon: cancelling
-                              ? const SizedBox(
-                                  height: 14,
-                                  width: 14,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: AppColors.cancel,
-                                  ),
-                                )
-                              : const Icon(Icons.cancel_outlined, size: 16),
-                          label: Text(cancelling ? 'Cancelando...' : 'Cancelar'),
                         ),
-                      ),
                     ],
                   ),
                 ],
@@ -230,11 +255,11 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
         }
 
         final now = DateTime.now();
-        final upcoming = (snapshot.data ?? [])
-            .where((c) =>
-                c.startTime.isAfter(now))
-            .toList()
-          ..sort((a, b) => a.startTime.compareTo(b.startTime));
+        final upcoming =
+            (snapshot.data ?? [])
+                .where((c) => c.startTime.isAfter(now))
+                .toList()
+              ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
         if (upcoming.isEmpty) return const SizedBox.shrink();
 
@@ -248,7 +273,9 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.7),
                   letterSpacing: 0.3,
                 ),
               ),
@@ -263,8 +290,10 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
   Widget _buildAppointmentCard(ModeloCita cita) {
     final service = _serviceById[cita.serviceId];
     // formato corto en español: "jue 7 may · 16:30"
-    final shortLabel =
-        DateFormat("EEE d MMM · HH:mm", 'es_ES').format(cita.startTime);
+    final shortLabel = DateFormat(
+      "EEE d MMM · HH:mm",
+      'es_ES',
+    ).format(cita.startTime);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -305,7 +334,9 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
                       _capitalize(shortLabel),
                       style: TextStyle(
                         fontSize: 12,
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -324,9 +355,7 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
       children: [
         Icon(icon, size: 16, color: AppColors.gold),
         const SizedBox(width: 8),
-        Expanded(
-          child: Text(text, style: const TextStyle(fontSize: 14)),
-        ),
+        Expanded(child: Text(text, style: const TextStyle(fontSize: 14))),
       ],
     );
   }
