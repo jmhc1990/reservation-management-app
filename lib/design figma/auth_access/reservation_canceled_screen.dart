@@ -23,7 +23,7 @@ class ReservaCancelada extends StatelessWidget {
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  color: errorColor.withValues(alpha: 0.1),
+                  color: errorColor.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.cancel_outlined, color: errorColor, size: 80),

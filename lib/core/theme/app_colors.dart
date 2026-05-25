@@ -8,7 +8,6 @@ class AppColors {
   static const Color cardBackground = Color(0xFFF0EDE6); // Fondo de tarjeta
   static const Color confirmation = Color(0xFF2E7D32);   // Verde de confirmación
   static const Color cancel = Color(0xFFC62828);         // Rojo de cancelación
-  static const Color pending = Color(0xFFFF8C00);        // Naranja de pendiente
 
   // Fondos dark mode
   static const Color darkBackground = Color(0xFF0F0F1A);

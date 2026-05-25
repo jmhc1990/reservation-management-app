@@ -40,8 +40,6 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
 
   String _statusLabel(EstadoCita status) {
     switch (status) {
-      case EstadoCita.pending:
-        return 'Pendiente';
       case EstadoCita.confirmed:
         return 'Confirmada';
       case EstadoCita.cancelled:
@@ -55,8 +53,6 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
 
   Color _statusColor(EstadoCita status) {
     switch (status) {
-      case EstadoCita.pending:
-        return AppColors.pending;
       case EstadoCita.confirmed:
         return AppColors.confirmation;
       case EstadoCita.cancelled:
