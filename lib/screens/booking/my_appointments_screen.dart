@@ -94,10 +94,17 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
       return true;
     } catch (e) {
       if (!mounted) return false;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+      await showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('No se pudo cancelar la cita'),
           content: Text(e.toString().replaceAll('Exception: ', '')),
-          backgroundColor: AppColors.cancel,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Aceptar'),
+            ),
+          ],
         ),
       );
       return false;
@@ -326,6 +333,7 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
 
   Widget _buildStatusBadge(EstadoCita status) {
     final (label, color) = switch (status) {
+      EstadoCita.pending => ('Pendiente', AppColors.pending),
       EstadoCita.confirmed => ('Confirmada', AppColors.confirmation),
       EstadoCita.cancelled => ('Cancelada', AppColors.cancel),
       EstadoCita.completed => ('Completada', AppColors.gold),

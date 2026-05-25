@@ -94,7 +94,7 @@ class _ConfigurarHorarioScreenState extends State<ConfigurarHorarioScreen> {
               ),
               Switch(
                 value: estaActivo,
-                activeColor: const Color(0xFF8B6B4E),
+                activeThumbColor: const Color(0xFF8B6B4E),
                 onChanged: (value) {
                   setState(() {
                     diasActivos[dia] = value;
