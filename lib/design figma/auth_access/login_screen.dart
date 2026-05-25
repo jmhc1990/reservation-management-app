@@ -93,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: GoogleFonts.lato(color: textoPrincipal),
                   decoration: InputDecoration(
                     labelText: 'Correo electrónico',
-                    labelStyle: GoogleFonts.lato(color: textoPrincipal.withValues(alpha: 0.6)),
+                    labelStyle: GoogleFonts.lato(color: textoPrincipal.withOpacity(0.6)),
                     enabledBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: doradoBarberia, width: 2),
                     ),
@@ -114,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: GoogleFonts.lato(color: textoPrincipal),
                     decoration: InputDecoration(
                       labelText: 'Contraseña',
-                      labelStyle: GoogleFonts.lato(color: textoPrincipal.withValues(alpha: 0.6)),
+                      labelStyle: GoogleFonts.lato(color: textoPrincipal.withOpacity(0.6)),
                       suffixIcon: IconButton(
                         icon: Icon(auth.obscurePassword ? Icons.visibility_off : Icons.visibility, color: doradoBarberia),
                         onPressed: auth.togglePasswordVisibility,

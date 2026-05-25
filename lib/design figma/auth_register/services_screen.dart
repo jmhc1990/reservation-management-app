@@ -73,7 +73,7 @@ class MyServicesScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.25),
+                      color: Colors.black.withOpacity(0.25),
                       blurRadius: 4,
                       offset: const Offset(0, 4),
                     )
@@ -110,7 +110,7 @@ class MyServicesScreen extends StatelessWidget {
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: primaryGold.withValues(alpha: 0.3), width: 1),
+          bottom: BorderSide(color: primaryGold.withOpacity(0.3), width: 1),
         ),
       ),
       child: Row(

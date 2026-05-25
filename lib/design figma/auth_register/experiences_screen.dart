@@ -99,7 +99,7 @@ class MyExperiencesScreen extends StatelessWidget {
       width: double.infinity,
       height: 131, // Altura de tu Figma [cite: 593]
       decoration: BoxDecoration(
-        color: cardGrey.withValues(alpha: opacity),
+        color: cardGrey.withOpacity(opacity),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: primaryGold, width: 5), // Borde dorado [cite: 599]
       ),
