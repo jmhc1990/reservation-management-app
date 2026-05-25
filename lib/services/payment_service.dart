@@ -40,11 +40,9 @@ class PaymentService {
 
       await Stripe.instance.presentPaymentSheet();
       return true;
-    } on StripeException catch (e) {
-      print('StripeException: $e');
+    } on StripeException {
       return false;
-    } catch (e) {
-      print('Error inesperado en PaymentService: $e');
+    } catch (_) {
       return false;
     }
   }
