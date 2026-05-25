@@ -189,10 +189,7 @@ class _MyAppointmentsSectionState extends State<MyAppointmentsSection> {
                                     final ok = await _doCancel(cita);
                                     if (!mounted || !dialogCtx.mounted) return;
                                     if (ok) {
-                                      // 1. Cerramos primero el cuadro flotante
                                       Navigator.pop(dialogCtx);
-
-                                      // 2. Saltamos a tu pantalla de cancelación con las variables correctas
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
