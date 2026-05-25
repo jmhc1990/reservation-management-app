@@ -63,7 +63,7 @@ service cloud.firestore {
       // Crear: cliente o admin pueden crear citas
       allow create: if isAuthenticated()
                       && (isClient() || isAdmin())
-                      && request.resource.data.status == 'pending'
+                      && (request.resource.data.status == 'pending' || request.resource.data.status == 'confirmed')
                       && request.resource.data.client_id is string
                       && request.resource.data.staff_id is string
                       && request.resource.data.service_id is string;

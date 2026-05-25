@@ -8,6 +8,7 @@ import 'navigation/auth_wrapper.dart';
 import 'core/theme/app_colors.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'services/payment_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +18,8 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  PaymentService.init();
 
   runApp(const BarberApp());
 }

@@ -2,18 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ReservaConfirmada extends StatelessWidget {
-  final String barbero;
-  final String servicio;
-  final String fecha;
-  final String hora;
-
-  const ReservaConfirmada({
-    super.key,
-    required this.barbero,
-    required this.servicio,
-    required this.fecha,
-    required this.hora,
-  });
+  const ReservaConfirmada({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -35,13 +24,9 @@ class ReservaConfirmada extends StatelessWidget {
                   color: goldColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.check_circle_outline,
-                  color: goldColor,
-                  size: 80,
-                ),
+                child: Icon(Icons.check_circle_outline, color: goldColor, size: 80),
               ),
-
+              
               const SizedBox(height: 30),
 
               Text(
@@ -59,7 +44,10 @@ class ReservaConfirmada extends StatelessWidget {
               Text(
                 'Tu cita ha sido programada con éxito. Te hemos enviado un correo con los detalles.',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.lato(fontSize: 16, color: Colors.black54),
+                style: GoogleFonts.lato(
+                  fontSize: 16,
+                  color: Colors.black54,
+                ),
               ),
 
               const SizedBox(height: 40),
@@ -71,21 +59,16 @@ class ReservaConfirmada extends StatelessWidget {
                   borderRadius: BorderRadius.circular(15),
                   border: Border.all(color: goldColor.withValues(alpha: 0.3)),
                   boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                    ),
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)
                   ],
                 ),
                 child: Column(
                   children: [
-                    _buildResumenRow(Icons.content_paste, 'Servicio', servicio),
-                    const Divider(height: 20),
-                    _buildResumenRow(Icons.calendar_today, 'Día', fecha),
-                    const Divider(height: 20),
-                    _buildResumenRow(Icons.access_time, 'Hora', hora),
-                    const Divider(height: 20),
-                    _buildResumenRow(Icons.person_outline, 'Barbero', barbero),
+                    _buildResumenRow(Icons.calendar_today, 'Día', '15 de Mayo, 2024'),
+                    const Divider(height: 30),
+                    _buildResumenRow(Icons.access_time, 'Hora', '17:00 PM'),
+                    const Divider(height: 30),
+                    _buildResumenRow(Icons.person_outline, 'Barbero', 'Alejandro García'),
                   ],
                 ),
               ),
@@ -94,14 +77,13 @@ class ReservaConfirmada extends StatelessWidget {
 
               ElevatedButton(
                 onPressed: () {
+                  // Aquí volveríamos a la pantalla principal
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: goldColor,
                   minimumSize: const Size(double.infinity, 55),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 child: Text(
                   'VOLVER AL INICIO',
