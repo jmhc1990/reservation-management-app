@@ -156,7 +156,7 @@ class _BookingScreenState extends State<BookingScreen> {
           a.startTime.isBefore(slotEnd),
         );
         if (!conflict && !current.isBefore(now)) slots.add(current);
-        current = current.add(Duration(minutes: duration));
+        current = current.add(const Duration(minutes: 5)); // slots cada 5 minutos
       }
     }
 
