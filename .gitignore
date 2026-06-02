@@ -52,3 +52,4 @@ GoogleService-Info.plist
 .env
 .env.*
 *.env
+lib/firebase_options.dart
