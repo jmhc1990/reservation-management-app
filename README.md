@@ -33,7 +33,7 @@
 
 1.  **Clonar el repositorio:**
     ```bash
-    git clone [https://github.com/tu-usuario/style-sync.git](https://github.com/tu-usuario/style-sync.git)
+    git clone https://github.com/jmhc1990/reservation-management-app.git⁠
     ```
 
 2.  **Instalar dependencias:**
