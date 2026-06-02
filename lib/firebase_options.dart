@@ -41,48 +41,49 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBRUZeQ9Vtm1wff6CDNGPImANW9uu-Zy60',
-    appId: '1:959177740121:web:c7ee7b43f3011900fe4648',
-    messagingSenderId: '959177740121',
-    projectId: 'stylesync-4b86c',
-    authDomain: 'stylesync-4b86c.firebaseapp.com',
-    storageBucket: 'stylesync-4b86c.firebasestorage.app',
+    apiKey: 'AIzaSyA-vAbCexliU940aUnGZ1rx101O3j7c8CI',
+    appId: '1:266462205003:web:2c87700f1813b72eb9e9ce',
+    messagingSenderId: '266462205003',
+    projectId: 'zaitec-barber',
+    authDomain: 'zaitec-barber.firebaseapp.com',
+    storageBucket: 'zaitec-barber.firebasestorage.app',
+    measurementId: 'G-W3SYV70ZMB',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDeoGVpBDtnFKFd9LctgGG2Z0xxuzDoknQ',
-    appId: '1:959177740121:android:40d6d3570c71d6e2fe4648',
-    messagingSenderId: '959177740121',
-    projectId: 'stylesync-4b86c',
-    storageBucket: 'stylesync-4b86c.firebasestorage.app',
+    apiKey: 'AIzaSyDS3JFjtYez6FKdRNXpOiuGqoeU83gVthI',
+    appId: '1:266462205003:android:bd3219cd7d65065bb9e9ce',
+    messagingSenderId: '266462205003',
+    projectId: 'zaitec-barber',
+    storageBucket: 'zaitec-barber.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyB7zozFbkukmgy0E2aETvZA4QVjItwMoN4',
-    appId: '1:959177740121:ios:9f8586bb05c6c732fe4648',
-    messagingSenderId: '959177740121',
-    projectId: 'stylesync-4b86c',
-    storageBucket: 'stylesync-4b86c.firebasestorage.app',
-    iosClientId: '959177740121-c5m4ajt908ub9f7onaq05i9ut6p8tfdd.apps.googleusercontent.com',
+    apiKey: 'AIzaSyBlbc3rnznmMpL75DjShxkyetX2uwf5HxE',
+    appId: '1:266462205003:ios:aedb5f9148e2fea2b9e9ce',
+    messagingSenderId: '266462205003',
+    projectId: 'zaitec-barber',
+    storageBucket: 'zaitec-barber.firebasestorage.app',
     iosBundleId: 'es.zaitec.styleSync',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyB7zozFbkukmgy0E2aETvZA4QVjItwMoN4',
-    appId: '1:959177740121:ios:9f8586bb05c6c732fe4648',
-    messagingSenderId: '959177740121',
-    projectId: 'stylesync-4b86c',
-    storageBucket: 'stylesync-4b86c.firebasestorage.app',
-    iosClientId: '959177740121-c5m4ajt908ub9f7onaq05i9ut6p8tfdd.apps.googleusercontent.com',
+    apiKey: 'AIzaSyBlbc3rnznmMpL75DjShxkyetX2uwf5HxE',
+    appId: '1:266462205003:ios:aedb5f9148e2fea2b9e9ce',
+    messagingSenderId: '266462205003',
+    projectId: 'zaitec-barber',
+    storageBucket: 'zaitec-barber.firebasestorage.app',
     iosBundleId: 'es.zaitec.styleSync',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyBRUZeQ9Vtm1wff6CDNGPImANW9uu-Zy60',
-    appId: '1:959177740121:web:49a555db744481c4fe4648',
-    messagingSenderId: '959177740121',
-    projectId: 'stylesync-4b86c',
-    authDomain: 'stylesync-4b86c.firebaseapp.com',
-    storageBucket: 'stylesync-4b86c.firebasestorage.app',
+    apiKey: 'AIzaSyA-vAbCexliU940aUnGZ1rx101O3j7c8CI',
+    appId: '1:266462205003:web:74e238d4ce11378eb9e9ce',
+    messagingSenderId: '266462205003',
+    projectId: 'zaitec-barber',
+    authDomain: 'zaitec-barber.firebaseapp.com',
+    storageBucket: 'zaitec-barber.firebasestorage.app',
+    measurementId: 'G-CHR8WYL9ZH',
   );
+
 }
