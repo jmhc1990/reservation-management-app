@@ -85,7 +85,7 @@ void main() {
         'is_active': true,
         'specialties': ['fade', 'navaja'],
         'service_ids': ['srv_1', 'srv_2'],
-        'working_hours': {},
+        'working_hours': <String, dynamic>{},
       };
 
       final staff = ModeloStaff.fromMap(map);
@@ -105,7 +105,7 @@ void main() {
         'bio': 'Estilista',
         'specialization': 'stylist',
         'is_active': true,
-        'working_hours': {},
+        'working_hours': <String, dynamic>{},
       };
       final staff = ModeloStaff.fromMap(map);
       expect(staff.specialization, Specialization.stylist);
@@ -118,7 +118,7 @@ void main() {
         'bio': '',
         'specialization': 'chef',
         'is_active': true,
-        'working_hours': {},
+        'working_hours': <String, dynamic>{},
       };
       final staff = ModeloStaff.fromMap(map);
       expect(staff.specialization, Specialization.barber);
@@ -153,7 +153,7 @@ void main() {
         'bio': '',
         'specialization': 'barber',
         'is_active': true,
-        'working_hours': {},
+        'working_hours': <String, dynamic>{},
       };
       final staff = ModeloStaff.fromMap(map);
       expect(staff.specialties, isEmpty);
