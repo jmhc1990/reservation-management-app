@@ -24,4 +24,8 @@ El código fuente está estructurado por módulos funcionales (*features*) para 
 
 ```text
 lib/
-├── core/               # Configuración global, temas, paleta "Obsidian & Gold" y util
+├── core/               # Configuración global, temas, paleta "Obsidian & Gold" y utilidades
+└── features/           # Módulos funcionales independientes (Auth, Reservas, Servicios)
+    ├── auth/
+    ├── reservations/
+    └── services/
