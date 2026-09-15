@@ -1,0 +1,26 @@
+{
+  "name": "reservation-management-app",
+  "version": "1.0.0",
+  "description": "A new Flutter project.\r 🎨 Diseño del Proyecto\r 👉 [Ver archivos en Figma](https://www.figma.com/design/Uo8QEWR8LchOKp1LqZrizK/StyleSync-Design-System?node-id=0-1&t=QNwzcLZfKBrV0e7o-1)\r ## Getting Started",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jmhc1990/reservation-management-app.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/jmhc1990/reservation-management-app/issues"
+  },
+  "homepage": "https://github.com/jmhc1990/reservation-management-app#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.4.1"
+  }
+}
