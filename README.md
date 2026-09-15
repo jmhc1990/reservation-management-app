@@ -1,18 +1,31 @@
-# style_sync
+StyleSync - Sistema de Gestión de Reservas para Barberías
 
-A new Flutter project.
-🎨 Diseño del Proyecto
-👉 [Ver archivos en Figma](https://www.figma.com/design/Uo8QEWR8LchOKp1LqZrizK/StyleSync-Design-System?node-id=0-1&t=QNwzcLZfKBrV0e7o-1)
-## Getting Started
+Aplicación móvil multiplataforma desarrollada en Flutter y Firebase diseñada para optimizar la gestión de citas, control de servicios y flujos de usuario, con un enfoque riguroso en la calidad de software mediante una sólida suite de pruebas automatizadas.
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+🚀 Características Principales
+- Autenticación de Usuarios: Control de acceso seguro mediante Firebase Auth.
+- Gestión de Reservas en Tiempo Real: Creación, modificación y seguimiento de citas sincronizadas con Cloud Firestore.
+- Diseño UI/UX "Obsidian & Gold": Interfaz optimizada con una paleta de colores sobria y elegante.
+- Arquitectura Modular: Separación clara de responsabilidades para facilitar el mantenimiento y la escalabilidad.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+ 📱 Tecnologías y Stack
+- Framework: Flutter (Dart)
+- Backend / BaaS: Firebase (Authentication, Cloud Firestore)
+- Testing: Flutter Test, Mockito (Más de 70 pruebas unitarias y de widgets)
+
+---
+
+📂 Arquitectura del Proyecto
+El código fuente está estructurado por módulos funcionales (features) para garantizar una alta cohesión y un bajo acoplamiento:
+
+```text
+lib/
+├── core/               # Configuración global, temas, paleta "Obsidian & Gold" y utilidades
+└── features/           # Módulos funcionales independientes (Auth, Reservas, Servicios)
+    ├── auth/
+    ├── reservations/
+    └── services/
